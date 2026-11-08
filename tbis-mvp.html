@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>TBIS · Excel Import Preview</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#14213d;background:#f5f7fb;font-synthesis:none}*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:0 auto;padding:32px 22px 56px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.brand{display:flex;align-items:center;gap:12px;font-weight:750;font-size:19px}.mark{width:38px;height:38px;border-radius:12px;background:#2457e6;color:#fff;display:grid;place-items:center;font-size:16px}.tag{font-size:12px;padding:6px 10px;border-radius:99px;background:#e8eefc;color:#3156a8;font-weight:650}.intro{margin-bottom:24px}.intro h1{font-size:30px;letter-spacing:-.7px;margin:0 0 8px}.intro p{color:#65738b;margin:0;line-height:1.55}.notice{border:1px solid #cfe3ff;background:#eff7ff;color:#315477;padding:13px 15px;border-radius:12px;font-size:13px;line-height:1.55;margin:18px 0 24px}.card{background:white;border:1px solid #e1e7f0;border-radius:16px;box-shadow:0 5px 22px #1f3a5f0a;margin-bottom:18px;overflow:hidden}.card-head{padding:18px 20px;border-bottom:1px solid #edf0f5;display:flex;justify-content:space-between;align-items:center;gap:12px}.card-head h2{font-size:16px;margin:0}.card-head p{font-size:12px;color:#77849a;margin:5px 0 0}.card-body{padding:20px}.drop{border:2px dashed #cbd6e8;border-radius:14px;background:#fafcff;padding:35px 20px;text-align:center;transition:.15s}.drop.over{border-color:#3866e8;background:#f0f5ff}.upload-icon{font-size:25px;color:#315be1;margin-bottom:9px}.drop strong{display:block;font-size:16px}.drop p{margin:7px 0 16px;color:#74819a;font-size:13px}.btn{border:0;border-radius:9px;background:#285be7;color:white;padding:10px 15px;font-weight:650;cursor:pointer;font-size:13px}.btn.secondary{background:#edf2ff;color:#274da9}.btn:disabled{opacity:.5;cursor:not-allowed}.hidden{display:none}.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:16px}.select-wrap{font-size:13px;color:#53627b}.select-wrap select{margin-left:7px;padding:9px 10px;border:1px solid #dce3ee;border-radius:8px;background:white;color:#24324a}.small{color:#7a879b;font-size:12px}.error{display:none;background:#fff0f0;border:1px solid #ffd1d1;color:#a52e37;padding:12px 14px;border-radius:10px;margin-top:14px;font-size:13px;line-height:1.5}.status{display:none;background:#effaf4;border:1px solid #c8eed7;color:#246341;padding:12px 14px;border-radius:10px;margin-top:14px;font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat{padding:15px;border:1px solid #e7ebf2;border-radius:12px}.stat span{color:#74819a;font-size:12px;display:block;margin-bottom:8px}.stat b{font-size:22px;letter-spacing:-.4px}.stat small{display:block;color:#8792a4;font-size:11px;margin-top:4px}.tablewrap{overflow:auto;border:1px solid #e8edf4;border-radius:10px}table{border-collapse:collapse;width:100%;min-width:800px;font-size:12px}th,td{text-align:left;padding:10px 11px;border-bottom:1px solid #edf0f4;white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}th{background:#f8faff;color:#53627b;font-weight:650;position:sticky;top:0}tr:last-child td{border-bottom:0}.pill{display:inline-block;background:#eef2f8;color:#5a6679;border-radius:20px;padding:4px 8px;font-size:11px}.section-title{font-size:14px;margin:20px 0 10px}.foot{color:#8490a2;text-align:center;font-size:12px;margin-top:24px;line-height:1.6}code{background:#f1f3f7;padding:2px 4px;border-radius:4px}@media(max-width:720px){.wrap{padding:20px 14px 40px}.intro h1{font-size:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.card-body{padding:15px}.card-head{padding:15px}.top{align-items:flex-start}.tag{white-space:nowrap}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top"><div class="brand"><div class="mark">T</div>TBIS <span class="tag">Excel import · first milestone</span></div><span class="small">Branch operations intelligence</span></header>
+  <section class="intro"><h1>Import and check your branch report</h1><p>Choose your CRM job export or branch inventory workbook. The file is read in this browser to preview its structure and basic data checks.</p></section>
+  <div class="notice"><strong>Privacy:</strong> The selected workbook is processed in your browser and is not uploaded to a server by this page. Preview hides customer names, phone numbers, and IMEI/SN values. Use company-approved data and don’t share sensitive files or screenshots publicly.</div>
+  <section class="card">
+    <div class="card-head"><div><h2>1. Choose a report</h2><p>Upload an Excel workbook (.xlsx or .xls) or CSV file.</p></div><span class="pill">Local browser processing</span></div>
+    <div class="card-body">
+      <div id="drop" class="drop"><div class="upload-icon">⇧</div><strong>Drop a report here, or browse your device</strong><p>CRM job report or inventory report · Excel and CSV supported</p><button id="browse" class="btn" type="button">Choose file</button><input id="file" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"></div>
+      <div id="error" class="error" role="alert"></div><div id="status" class="status" role="status"></div>
+      <div id="controls" class="controls hidden"><label class="select-wrap">Report type <select id="kind"><option value="jobs">CRM job report</option><option value="inventory">Inventory report</option></select></label><label id="sheetWrap" class="select-wrap">Worksheet <select id="sheet"></select></label><span id="fileInfo" class="small"></span><button id="clear" class="btn secondary" type="button">Clear file</button></div>
+    </div>
+  </section>
+  <section id="results" class="hidden">
+    <section class="card"><div class="card-head"><div><h2>2. Import check</h2><p>Basic counts and required-column checks. This is not a management KPI report yet.</p></div><span id="checkBadge" class="pill">Awaiting file</span></div><div class="card-body"><div class="grid" id="stats"></div><div id="validation"></div></div></section>
+    <section class="card"><div class="card-head"><div><h2>3. Safe data preview</h2><p>First 10 records; sensitive fields are masked.</p></div></div><div class="card-body"><div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div></div></section>
+  </section>
+  <footer class="foot">TBIS proof of concept · This milestone only checks workbook structure and previews records. KPI calculations, inventory matching, and production validation come next.</footer>
+</main>
+<script>
+(() => {
+  const fileInput=document.getElementById('file'), drop=document.getElementById('drop'), errorBox=document.getElementById('error'), statusBox=document.getElementById('status');
+  const controls=document.getElementById('controls'), results=document.getElementById('results'), sheetSelect=document.getElementById('sheet'), kindSelect=document.getElementById('kind');
+  let workbook=null, currentFile=null, rows=[], headers=[];
+  const privateHeader=/customer name|contact no|imei|sn1|sn2|phone number/i;
+  const clean=s=>String(s??'').trim();
+  const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function showError(msg){errorBox.textContent=msg;errorBox.style.display='block';statusBox.style.display='none'}
+  function showStatus(msg){statusBox.textContent=msg;statusBox.style.display='block';errorBox.style.display='none'}
+  function hideMessages(){errorBox.style.display='none';statusBox.style.display='none'}
+  function readRows(sheet){
+    const aoa=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false,blankrows:false});
+    let hi=-1;
+    for(let i=0;i<Math.min(aoa.length,30);i++){
+      const vals=aoa[i].map(v=>clean(v).toLowerCase());
+      const hasJob=vals.includes('js no'); const hasInventory=vals.includes('assets/material code');
+      if((kindSelect.value==='jobs'&&hasJob)||(kindSelect.value==='inventory'&&hasInventory)){hi=i;break}
+    }
+    if(hi<0) hi=0;
+    const hs=(aoa[hi]||[]).map((v,i)=>clean(v)||`Column ${i+1}`);
+    const data=[];
+    for(let i=hi+1;i<aoa.length;i++){
+      const a=aoa[i]; if(!a.some(v=>clean(v)!=='')) continue;
+      const obj={}; hs.forEach((h,j)=>obj[h]=a[j]??''); data.push(obj);
+    }
+    return {headers:hs,rows:data,headerRow:hi+1};
+  }
+  async function loadFile(file){
+    hideMessages(); currentFile=file; workbook=null; rows=[]; headers=[];
+    if(!file){return}
+    if(file.size===0){showError('This file is empty. Choose a non-empty Excel or CSV file.');return}
+    // Guard against accidental huge allocations in a browser tab; this is a safety limit, not a CRM data limit.
+    if(file.size>100*1024*1024){showError('This file is over the 100 MB browser safety limit. Please export a smaller report or split it into smaller date ranges. Your original file is not changed.');return}
+    try{
+      const ext=file.name.split('.').pop().toLowerCase();
+      if(ext==='csv'){
+        const text=await file.text();
+        if(text.length>150*1024*1024) throw new Error('The CSV text is too large to safely preview in this browser. Export a smaller date range.');
+        workbook=XLSX.read(text,{type:'string',dense:true});
+      }else{
+        const buf=await file.arrayBuffer();
+        workbook=XLSX.read(buf,{type:'array',dense:true,cellFormula:false,cellHTML:false,cellStyles:false});
+      }
+      if(!workbook.SheetNames.length) throw new Error('No worksheets were found in this file.');
+      sheetSelect.innerHTML=workbook.SheetNames.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+      controls.classList.remove('hidden'); results.classList.remove('hidden');
+      document.getElementById('fileInfo').textContent=`${file.name} · ${(file.size/1024/1024).toFixed(2)} MB`;
+      render();
+    }catch(err){
+      console.error(err);workbook=null;controls.classList.add('hidden');results.classList.add('hidden');
+      showError(`Could not read this workbook. ${err?.message||'The file may be damaged, encrypted, or too large for available browser memory.'} Try saving a fresh .xlsx copy or exporting a smaller date range. No data was uploaded.`);
+    }
+  }
+  function render(){
+    if(!workbook)return;
+    hideMessages();
+    const sheet=workbook.Sheets[sheetSelect.value]; const parsed=readRows(sheet); headers=parsed.headers; rows=parsed.rows;
+    const job=kindSelect.value==='jobs'; const key=job?'JS No':'Assets/Material Code';
+    const present=new Set(headers.map(h=>h.toLowerCase()));
+    const required=job?['JS No','Created On','Warranty Status','Document Status Name']:['Assets/Material Code','Quantity','Frozen','Available'];
+    const missing=required.filter(x=>!present.has(x.toLowerCase()));
+    const keyValues=rows.map(r=>clean(r[key])).filter(Boolean); const unique=new Set(keyValues);
+    const duplicates=keyValues.length-unique.size;
+    const total=rows.length;
+    const stats=job?[
+      ['Data rows',total,'Rows after the header'],['Unique job numbers',unique.size,'Distinct JS No values'],['Duplicate job numbers',duplicates,duplicates?'Review before KPI reporting':'No duplicate JS No detected'],['Columns found',headers.length,`Header row detected at row ${parsed.headerRow}`]
+    ]:[['Data rows',total,'Inventory lines'],['Material codes',unique.size,'Distinct material codes'],['Duplicate-code lines',duplicates,'Expected when multiple units share a part code'],['Columns found',headers.length,`Header row detected at row ${parsed.headerRow}`]];
+    document.getElementById('stats').innerHTML=stats.map(s=>`<div class="stat"><span>${escapeHtml(s[0])}</span><b>${Number(s[1]).toLocaleString()}</b><small>${escapeHtml(s[2])}</small></div>`).join('');
+    const v=document.getElementById('validation');
+    if(missing.length){v.innerHTML=`<div class="error" style="display:block;margin-top:16px"><strong>Required columns not found:</strong> ${missing.map(escapeHtml).join(', ')}. Check the report type and worksheet. Column names are matched without case sensitivity.</div>`;document.getElementById('checkBadge').textContent='Needs attention'}
+    else if(job&&duplicates){v.innerHTML=`<div class="notice" style="margin:16px 0 0"><strong>Review duplicates:</strong> ${duplicates} repeated JS No value(s) detected. The importer will not silently remove these; investigate before relying on totals.</div>`;document.getElementById('checkBadge').textContent='Review duplicates'}
+    else {v.innerHTML=`<div class="status" style="display:block;margin-top:16px">Required columns found. This confirms the file structure only; KPI rules and value validation are not implemented in this milestone.</div>`;document.getElementById('checkBadge').textContent='Structure looks good'}
+    const previewHeaders=headers.slice(0,12);document.getElementById('thead').innerHTML=`<tr>${previewHeaders.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr>`;
+    const preview=rows.slice(0,10);document.getElementById('tbody').innerHTML=preview.length?preview.map(r=>`<tr>${previewHeaders.map(h=>`<td>${privateHeader.test(h)?(clean(r[h])?'••••••':''):escapeHtml(r[h])}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${previewHeaders.length||1}">No data rows found beneath the detected header.</td></tr>`;
+    showStatus(`Read ${total.toLocaleString()} rows from “${sheetSelect.value}”. File content remains in this browser tab.`);
+  }
+  document.getElementById('browse').addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',e=>loadFile(e.target.files[0]));
+  document.getElementById('clear').addEventListener('click',()=>{workbook=null;currentFile=null;rows=[];fileInput.value='';controls.classList.add('hidden');results.classList.add('hidden');hideMessages()});
+  sheetSelect.addEventListener('change',render);kindSelect.addEventListener('change',render);
+  for(const name of ['dragenter','dragover'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.add('over')});
+  for(const name of ['dragleave','drop'])drop.addEventListener(name,e=>{e.preventDefault();drop.classList.remove('over')});
+  drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)loadFile(f)});
+})();
+</script>
+</body>
+</html>
