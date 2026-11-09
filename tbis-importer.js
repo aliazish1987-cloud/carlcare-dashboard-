@@ -54,6 +54,15 @@ function parseDelimited(text,delimiter){
  return rows;
 }
 function detectFileKind(input,name=''){const b=input instanceof Uint8Array?input:new Uint8Array(input);if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&([0x03,0x05,0x07].includes(b[2])))return 'xlsx';if(b.length>=8&&b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0&&b[4]===0xA1&&b[5]===0xB1&&b[6]===0x1A&&b[7]===0xE1)return 'xls';validateExtension(name||'report.csv');return 'text'}
+function detectFileKind(input,name){
+ const b=input instanceof Uint8Array?input:new Uint8Array(input);
+ if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&(b[2]===0x03||b[2]===0x05||b[2]===0x07))return 'xlsx';
+ if(b.length>=8&&b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0&&b[4]===0xA1&&b[5]===0xB1&&b[6]===0x1A&&b[7]===0xE1)return 'xls';
+ const ext=String(name||'').split('.').pop().toLowerCase();
+ if(['xlsx','xls'].includes(ext))return ext;
+ if(['csv','tsv','txt'].includes(ext))return 'text';
+ return 'unknown';
+}
 function validateExtension(name){const ext=String(name||'').split('.').pop().toLowerCase();if(!['csv','tsv','txt','xls','xlsx'].includes(ext))throw new Error('Unsupported file format. Choose CSV, TSV, TXT, XLS, or XLSX.');return ext}
 function parseBytes(input){
  const bytes=input instanceof Uint8Array?input:new Uint8Array(input);
