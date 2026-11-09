@@ -388,7 +388,7 @@ function line(label,value,total,detail){
 }
 function groupCount(rows,fn){const map=new Map();rows.forEach(function(r){const k=fn(r)||'Unknown';map.set(k,(map.get(k)||0)+1)});return [...map.entries()].sort(function(a,b){return b[1]-a[1]})}
 function averageTurn(rows){const values=rows.map(turn).filter(function(x){return x!==null});return values.length?values.reduce(function(a,b){return a+b},0)/values.length:null}
-function compareLabel(now,prev,unit){if(now===null||prev===null)return 'Not enough data for comparison';if(prev===0)return now===0?'No change':'New this week';const diff=now-prev;return (diff>0?'+':'')+(unit==='pp'?diff.toFixed(1):Math.round(diff).toLocaleString())+(unit==='pp'?' percentage points':unit==='min'?' minutes':'')+' vs previous week'}
+function compareLabel(now,prev,unit){if(now===null||prev===null)return 'Not enough data for comparison';if(prev===0)return now===0?'No change':'New this week';const diff=now-prev;if(unit==='money')return (diff>=0?'+':'')+money(diff)+' vs previous week';return (diff>0?'+':'')+(unit==='pp'?diff.toFixed(1):Math.round(diff).toLocaleString())+(unit==='pp'?' percentage points':unit==='min'?' minutes':'')+' vs previous week'}
 function renderWeek(rows,endDate,asOf){
  const end=new Date(endDate);end.setHours(0,0,0,0);const curStart=new Date(end);curStart.setDate(curStart.getDate()-6);const prevEnd=new Date(curStart);const prevStart=new Date(prevEnd);prevStart.setDate(prevStart.getDate()-7);
  const current=rows.filter(function(r){return r.createdAt&&r.createdAt>=curStart&&r.createdAt<new Date(end.getTime()+86400000)});
@@ -436,10 +436,12 @@ function renderDetails(rows,m,asOf){
  $('poBreakdown').innerHTML=poTypes.map(function(x){return line(x[0],x[1],maxPo)}).join('');
  const activation=rows.filter(function(r){if(!r.activationAt||!r.createdAt)return false;const d=(r.createdAt-r.activationAt)/86400000;return d>=0&&d<=7});
  const special=['SWAP','DAP','DOA'].map(function(s){return [s,activation.filter(function(r){return TBISImporter.norm(r.service)===TBISImporter.norm(s)}).length]});
+ const policyCandidates=special.reduce(function(n,x){return n+x[1]},0);
  const maxActivation=Math.max(1,...special.map(function(x){return x[1]}));
- $('activationBreakdown').innerHTML='<div class="footnote">'+activation.length+' jobs received within 7 days of activation (all service types).</div>'+special.map(function(x){return line(x[0],x[1],maxActivation)}).join('');
+ $('activationBreakdown').innerHTML='<div class="footnote">'+policyCandidates+' SWAP/DAP/DOA cases fall within the 7-day activation window; '+activation.length+' jobs across all service types were received within 7 days. This is a policy-window indicator, not a final eligibility decision.</div>'+special.map(function(x){return line(x[0],x[1],maxActivation)}).join('');
  const delivered=rows.filter(function(r){return r.deliveryFlag==='yes'}).length;
  const quality=[
+ ['Online reservation conversion','This file has Online-received jobs, but not the total reservation count needed for a conversion rate'],
  ['Customer satisfaction', 'Not present in this CRM report · target 97.5%'],
  ['Bounce within 30 days','Not verifiable without customer delivery dates and comparable repeat-fault history · target 0.92%'],
  ['Ready for delivery','No consistent customer handover signal · preferred ≤ 2 days'],
