@@ -2,67 +2,113 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1220">
-<title>TBIS · Branch Intelligence</title>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<meta name="theme-color" content="#101b32">
+<title>TBIS · Transsion Branch Intelligence System</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#172033;background:#f4f6fa;font-synthesis:none;text-rendering:optimizeLegibility;--ink:#162033;--muted:#69758a;--line:#e6eaf0;--blue:#315be8;--navy:#0d1729;--green:#16865d;--amber:#ad6909;--red:#c13b4b;--card:#fff}
-*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}.app{min-height:100vh;display:grid;grid-template-columns:248px minmax(0,1fr)}.side{background:var(--navy);color:#dce5f3;padding:24px 16px;display:flex;flex-direction:column;gap:24px}.brand{display:flex;gap:11px;align-items:center;padding:4px 8px}.mark{width:39px;height:39px;display:grid;place-items:center;background:linear-gradient(140deg,#537aff,#2745bd);border-radius:12px;color:#fff;font-weight:900;font-size:20px}.brand strong{display:block;color:white;font-size:15px;letter-spacing:.4px}.brand small{display:block;color:#8fa1bd;font-size:10px;margin-top:2px;letter-spacing:1.5px}.navlabel{color:#647690;font-size:9px;font-weight:800;letter-spacing:1.6px;padding:0 10px;margin-bottom:4px}.navitem{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:9px;color:#9eacc2;font-size:12px;font-weight:650;margin:2px 0}.navitem.active{background:#1b2c4c;color:white}.navitem span:first-child{width:18px;text-align:center;font-size:15px}.sidebottom{margin-top:auto;border-top:1px solid #23314a;padding:16px 9px 0;color:#7e8ea8;font-size:10px;line-height:1.6}.main{min-width:0;padding:26px 30px 40px;max-width:1800px;width:100%;margin:auto}.topline{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}.crumb{color:#77849a;font-size:11px}.topright{display:flex;align-items:center;gap:10px}.localtag{display:inline-flex;align-items:center;gap:6px;border:1px solid #dce5ef;background:#fff;border-radius:30px;padding:7px 11px;color:#54647d;font-size:10px}.dot{width:7px;height:7px;border-radius:50%;background:#1baf76}.avatar{width:31px;height:31px;border-radius:50%;background:#e8edff;color:#3859bb;display:grid;place-items:center;font-size:11px;font-weight:800}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:0 0 20px}.eyebrow{font-size:10px;font-weight:800;color:#4566d6;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}.hero h1{margin:0;color:#14213a;font-size:29px;letter-spacing:-1px;line-height:1.15}.hero p{margin:8px 0 0;color:#748096;font-size:12px}.hero-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;background:var(--blue);color:white;border-radius:9px;padding:10px 14px;font-size:11px;font-weight:750;cursor:pointer;box-shadow:0 4px 10px #315be825}.btn:hover{filter:brightness(.97)}.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}.btn.secondary{background:#fff;color:#42516a;border:1px solid #dfe5ee;box-shadow:none}.btn.ghost{background:#edf1ff;color:#3455c0;box-shadow:none}.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 20px #18274208}.upload{padding:16px 18px;margin-bottom:17px}.uploadhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.uploadhead h2,.sectiontitle{font-size:13px;margin:0;color:#1c2a41}.uploadhead p{font-size:10px;margin:4px 0 0;color:#8590a2}.drop{border:1.5px dashed #cbd6e7;border-radius:11px;background:#fafcff;padding:18px 16px;display:flex;align-items:center;gap:14px;cursor:pointer}.drop:hover{border-color:#7f99f4;background:#f6f8ff}.dropicon{width:42px;height:42px;display:grid;place-items:center;background:#edf2ff;border-radius:11px;color:#395ed4;font-size:20px}.droptext{flex:1;min-width:0}.droptext strong{font-size:12px;color:#273650}.droptext p{font-size:10px;color:#818da2;margin:4px 0 0;line-height:1.55}.droptext b{color:#445cbd}.fileinput{display:none}.importmeta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}.metaText{font-size:10px;color:#79869b}.msg{display:none;margin-top:10px;padding:10px 12px;border-radius:9px;font-size:11px;line-height:1.55}.msg.error{display:none;color:#a52b39;background:#fff1f2;border:1px solid #ffd3d8}.msg.warning{color:#8b5a0a;background:#fff8e8;border:1px solid #f2dbad}.msg.success{color:#176c4b;background:#effaf4;border:1px solid #ccebd8}.filters{display:flex;align-items:end;gap:9px;flex-wrap:wrap;padding:13px 15px;margin-bottom:16px}.field{display:flex;flex-direction:column;gap:5px;color:#6c7890;font-size:9px;font-weight:750;letter-spacing:.2px}.field input,.field select{height:33px;border:1px solid #dce3ed;border-radius:7px;padding:0 9px;background:white;color:#273650;font-size:10px;min-width:135px}.field input[type=datetime-local]{min-width:185px}.field input[type=number]{min-width:70px;width:75px}.filters .spacer{flex:1}.periodlabel{align-self:center;color:#77859b;font-size:10px}.kpihead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 10px}.kpihead h2{font-size:14px;margin:0;color:#1d2a40}.kpihead span{font-size:10px;color:#8a95a6}.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.kpi{padding:14px 15px;min-height:111px;position:relative;overflow:hidden}.kpitop{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#7a869a;font-size:10px;font-weight:700}.kpiicon{width:26px;height:26px;border-radius:8px;background:#eef2ff;color:#4663d3;display:grid;place-items:center;font-size:13px}.kpi .value{font-size:23px;font-weight:850;letter-spacing:-.7px;color:#1a2940;margin:9px 0 4px;white-space:nowrap}.kpi .sub{font-size:9px;color:#8792a4;line-height:1.45}.kpi .sub b{color:#53627a}.kpi.good .kpiicon{background:#eaf8f1;color:#19815a}.kpi.warn .kpiicon{background:#fff4e2;color:#a5680b}.kpi.bad .kpiicon{background:#fff0f1;color:#ba3b4c}.kpi.na .value{font-size:17px;color:#909bad}.tag{display:inline-block;padding:3px 6px;border-radius:12px;font-size:8px;font-weight:800;letter-spacing:.2px;background:#eef1f6;color:#69758a}.tag.ok{background:#eaf8f1;color:#16764f}.tag.warn{background:#fff5e4;color:#98600a}.tag.bad{background:#fff0f1;color:#aa3544}.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin-top:14px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px}.chartpanel,.listpanel{padding:16px}.panelhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.panelhead h3{margin:0;font-size:12px;color:#21304a}.panelhead p{font-size:9px;color:#8994a6;margin:4px 0 0}.legend{font-size:9px;color:#8290a5}.bars{display:flex;align-items:end;gap:7px;height:155px;padding:7px 1px 23px;border-bottom:1px solid #e8edf3}.barcol{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.bar{width:min(23px,80%);border-radius:5px 5px 1px 1px;background:linear-gradient(180deg,#7391ff,#355de5);min-height:2px;position:relative}.barvalue{font-size:8px;color:#6e7b91}.barlabel{font-size:8px;color:#8a95a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;position:relative;top:21px}.mixlist{display:flex;flex-direction:column;gap:12px}.mixrow{display:grid;grid-template-columns:76px 1fr 35px;gap:8px;align-items:center;font-size:10px;color:#66738a}.track{height:7px;border-radius:20px;background:#eff2f7;overflow:hidden}.fill{height:100%;border-radius:20px;background:#4f70ed}.mixrow strong{text-align:right;color:#34445e;font-size:10px}.ranklist{display:flex;flex-direction:column;gap:10px}.rankrow{display:grid;grid-template-columns:20px minmax(0,1fr) 42px;gap:8px;align-items:center;font-size:10px}.ranknum{width:20px;height:20px;border-radius:6px;background:#f0f3fa;color:#687891;display:grid;place-items:center;font-size:9px;font-weight:800}.rankname{min-width:0}.rankname strong{display:block;color:#35435a;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rankname small{color:#99a2b1;font-size:8px}.rankvalue{text-align:right;color:#3d59ba;font-weight:800}.tablepanel{margin-top:14px;overflow:hidden}.tablehead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}.tablehead h3{margin:0;font-size:12px;color:#21304a}.tablehead p{font-size:9px;color:#8591a4;margin:4px 0 0}.tabletools{display:flex;align-items:center;gap:7px}.tabletools input,.tabletools select{height:30px;border:1px solid #dde4ed;border-radius:7px;padding:0 8px;font-size:10px;max-width:155px}.tablewrap{overflow:auto;max-height:420px}table{width:100%;border-collapse:collapse;min-width:1000px;font-size:10px}th{position:sticky;top:0;background:#f8faff;color:#6d7a8f;text-transform:uppercase;letter-spacing:.5px;font-size:8px;z-index:1;text-align:left}th,td{padding:10px 11px;border-bottom:1px solid #edf0f4;white-space:nowrap;text-align:left}tbody tr:hover{background:#fafcff}.job{font-weight:800;color:#3459c6}.empty{padding:25px;text-align:center;color:#8a95a5;font-size:11px}.summarytable{width:100%;min-width:0}.summarytable th,.summarytable td{padding:9px 8px}.summarytable th{position:static}.dataquality{margin-top:14px;padding:15px}.qualitygrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.qualityitem{padding:11px;background:#f8faff;border:1px solid #edf0f5;border-radius:9px}.qualityitem strong{display:block;font-size:17px;color:#25334b}.qualityitem span{display:block;color:#8691a3;font-size:9px;margin-top:4px}.footnote{font-size:9px;color:#8b96a7;line-height:1.6;margin-top:12px}.disclosure{margin-top:14px;padding:14px 16px;color:#627087;font-size:10px;line-height:1.7}.disclosure strong{color:#3d4c64}.hide{display:none!important}.right{float:right}@media(max-width:1250px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.app{grid-template-columns:210px minmax(0,1fr)}.main{padding:22px 20px}}@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none}.main{padding:18px 12px}.grid2,.grid3{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{align-items:flex-start;flex-direction:column}}@media(max-width:500px){.kpis{grid-template-columns:1fr 1fr;gap:7px}.kpi{padding:11px;min-height:100px}.kpi .value{font-size:19px}.qualitygrid{grid-template-columns:repeat(2,1fr)}.drop{align-items:flex-start}.drop .btn{display:none}.topline{margin-bottom:16px}}
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#17233b;background:#f4f6fb;font-size:14px;--navy:#101b32;--blue:#315de8;--blue2:#eaf0ff;--line:#e5eaf2;--muted:#718097;--green:#16835b;--red:#c0444e;--amber:#a96a12;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:#f4f6fb}button,input,select{font:inherit}button{cursor:pointer}.layout{min-height:100vh}.side{position:fixed;inset:0 auto 0 0;width:246px;background:var(--navy);color:#dce5f5;padding:22px 14px;display:flex;flex-direction:column;z-index:5}.brand{display:flex;align-items:center;gap:11px;padding:0 10px 25px}.brandmark{width:38px;height:38px;border-radius:12px;background:#315de8;display:grid;place-items:center;color:#fff;font-weight:850;font-size:19px}.brand b{font-size:17px;letter-spacing:.3px}.brand small{display:block;color:#8fa1c0;font-size:10px;margin-top:2px}.navlabel{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#7e91b1;padding:12px 12px 7px}.navbtn{border:0;background:transparent;color:#bac8df;padding:11px 12px;border-radius:9px;text-align:left;display:flex;gap:11px;align-items:center;width:100%;font-size:12px;font-weight:650;margin:2px 0}.navbtn .ico{width:20px;text-align:center;font-size:15px}.navbtn:hover{background:#1d2d4c;color:#fff}.navbtn.active{background:#2a3e66;color:#fff;box-shadow:inset 3px 0 #7da0ff}.sidefoot{margin-top:auto;border-top:1px solid #263653;padding:14px 10px;color:#8194b3;font-size:10px;line-height:1.6}.main{margin-left:246px;padding:26px 30px 50px;max-width:1700px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#7f8da4;font-weight:750}.title{font-size:25px;letter-spacing:-.6px;margin:4px 0 4px;color:#14213a}.sub{color:var(--muted);font-size:12px;margin:0}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid transparent;border-radius:9px;padding:10px 14px;font-weight:750;font-size:11px;background:var(--blue);color:white;box-shadow:0 2px 4px #1e3a8a14}.btn:hover{filter:brightness(.97)}.btn.secondary{background:#fff;color:#2d477c;border-color:#dce4f0;box-shadow:none}.btn.dark{background:#15233f}.btn:disabled{opacity:.5;cursor:not-allowed}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 20px #1d31520a}.upload{padding:16px;margin-bottom:17px}.uploadrow{display:flex;align-items:center;gap:13px}.uploadicon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#edf2ff;color:#315de8;display:grid;place-items:center;font-size:19px}.uploadcopy{flex:1;min-width:0}.uploadcopy strong{display:block;font-size:13px}.uploadcopy p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.5}.uploadbuttons{display:flex;gap:8px;align-items:center}.hidden{display:none!important}.message{padding:11px 13px;border-radius:9px;font-size:11px;line-height:1.55;margin-top:12px;white-space:pre-wrap}.message.success{background:#eaf8f1;border:1px solid #ccebdc;color:#176847}.message.warn{background:#fff7e8;border:1px solid #f1dfb8;color:#80520a}.message.error{background:#fff0f1;border:1px solid #f4cfd2;color:#a52d38}.filechips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.filechip{padding:5px 8px;border:1px solid #e4e9f1;border-radius:30px;color:#61718b;font-size:10px;background:#fafbfe}.filters{display:flex;align-items:end;gap:9px;flex-wrap:wrap;margin-bottom:17px}.field{display:flex;flex-direction:column;gap:5px;font-size:10px;color:#718097;font-weight:700}.field select,.field input{height:35px;border:1px solid #dce3ed;border-radius:8px;background:white;color:#263650;padding:0 9px;min-width:140px;font-size:11px}.field input[type=datetime-local]{min-width:200px}.field input[type=date]{min-width:130px}.filterspacer{flex:1}.periodtag{font-size:10px;color:#8190a5;padding:0 2px 10px}.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}.kpi{padding:15px 16px;min-height:112px;position:relative;overflow:hidden}.kpi:after{content:"";position:absolute;width:65px;height:65px;border-radius:50%;right:-18px;top:-18px;background:#f4f6fc}.kpi.good:after{background:#e7f7ef}.kpi.bad:after{background:#fff0f0}.kpi.warn:after{background:#fff6e8}.klabel{position:relative;z-index:1;color:#78869b;font-size:10px;font-weight:750}.kvalue{position:relative;z-index:1;font-size:27px;font-weight:820;letter-spacing:-.7px;margin:8px 0 4px;color:#14213a}.khint{position:relative;z-index:1;color:#8491a5;font-size:10px}.kbadge{position:absolute;right:12px;bottom:12px;z-index:2;font-size:9px;font-weight:800;padding:4px 7px;border-radius:20px;background:#eef2f8;color:#66748a}.kbadge.good{background:#e7f7ef;color:#18724e}.kbadge.bad{background:#fff0f0;color:#b1343d}.kbadge.warn{background:#fff5e6;color:#8d590c}.twocol{grid-template-columns:1.3fr 1fr;margin-bottom:15px}.threecol{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:15px}.panel{padding:16px;min-width:0}.panelhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.panelhead h3{margin:0;font-size:13px;color:#1a2943}.panelhead p{margin:4px 0 0;color:#8390a4;font-size:10px}.tag{font-size:9px;padding:4px 7px;border-radius:20px;background:#f0f3f8;color:#748197;font-weight:750;white-space:nowrap}.bars{display:flex;flex-direction:column;gap:10px}.barrow{display:grid;grid-template-columns:minmax(70px,1fr) 2fr 42px;gap:10px;align-items:center;font-size:10px}.barname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#53627b}.bartrack{height:8px;background:#eff2f7;border-radius:20px;overflow:hidden}.barfill{height:100%;border-radius:20px;background:#5278ed}.barcount{text-align:right;font-weight:800;color:#34445e;font-variant-numeric:tabular-nums}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:9px;color:#7d8aa0;margin-top:12px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#4c70e7}.dot.green{background:#27a273}.dot.orange{background:#e2a142}.dot.red{background:#d45a61}.tablewrap{overflow:auto;max-height:470px}table{border-collapse:collapse;width:100%;font-size:10px;min-width:630px}th{background:#f7f9fc;color:#718097;text-transform:uppercase;letter-spacing:.45px;font-size:9px;position:sticky;top:0;z-index:1}th,td{padding:10px 9px;text-align:left;border-bottom:1px solid #eef1f5;white-space:nowrap}td{color:#40516d}tbody tr:hover{background:#fbfcff}.num{text-align:right;font-variant-numeric:tabular-nums}.jobid{font-weight:800;color:#3153b5}.pill{display:inline-block;border-radius:20px;padding:4px 7px;font-size:9px;font-weight:800}.pill.good{background:#e8f7ef;color:#19714d}.pill.bad{background:#fff0f0;color:#ad333d}.pill.warn{background:#fff5e6;color:#89550b}.pill.neutral{background:#eff2f7;color:#65738b}.note{background:#f8faff;border:1px solid #e7edf8;border-radius:10px;padding:11px 12px;color:#62718a;font-size:10px;line-height:1.6;margin-top:12px}.note strong{color:#304461}.integrity{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.integrityitem{border:1px solid #edf0f5;border-radius:10px;padding:11px}.integrityitem b{display:block;font-size:17px;color:#20314f}.integrityitem span{font-size:9px;color:#8491a5}.modelmap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.mapitem{display:flex;gap:8px;align-items:center;justify-content:space-between;border:1px solid #edf0f5;border-radius:9px;padding:8px 9px;font-size:10px}.mapitem .modelname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:65%;color:#465772}.mapitem select{border:1px solid #e0e6ef;border-radius:7px;padding:5px;font-size:9px;background:#fff;color:#34445f}.tabview{display:none}.tabview.active{display:block}.empty{padding:24px;text-align:center;color:#8996a9;font-size:11px}.section-title{font-size:15px;margin:19px 0 10px;color:#1d2c47}.section-title:first-child{margin-top:0}.smallmuted{color:#8895a8;font-size:9px;line-height:1.5}.metricline{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eff2f6;font-size:10px}.metricline:last-child{border-bottom:0}.metricline b{color:#263753}.progress{height:8px;border-radius:20px;background:#eef1f6;overflow:hidden;margin-top:7px}.progress>span{display:block;height:100%;background:#4e72e8}.reporttables{display:grid;grid-template-columns:1fr 1fr;gap:13px}.footer{font-size:9px;color:#97a2b2;text-align:center;margin-top:24px;line-height:1.6}
+@media(max-width:1200px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.twocol{grid-template-columns:1fr}.threecol{grid-template-columns:1fr 1fr}}
+@media(max-width:820px){.side{position:static;width:auto;height:auto;padding:10px 12px;display:block}.brand{padding:0 5px 10px}.side nav{display:flex;gap:4px;overflow:auto}.navlabel,.sidefoot{display:none}.navbtn{width:auto;flex:0 0 auto;padding:9px 10px;margin:0}.navbtn .ico{display:none}.main{margin:0;padding:18px 12px 35px}.topbar{align-items:flex-start;flex-direction:column}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.threecol{grid-template-columns:1fr}.reporttables{grid-template-columns:1fr}}
+@media(max-width:520px){.kpis{grid-template-columns:1fr 1fr;gap:8px}.kpi{padding:12px;min-height:103px}.kvalue{font-size:22px}.uploadrow{align-items:flex-start;flex-wrap:wrap}.uploadbuttons{width:100%}.uploadbuttons .btn{flex:1}.filters{align-items:stretch}.field{flex:1}.field select,.field input{width:100%;min-width:0}.modelmap{grid-template-columns:1fr}.integrity{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="layout">
 <aside class="side">
- <div class="brand"><div class="mark">T</div><div><strong>TBIS</strong><small>BRANCH INTELLIGENCE</small></div></div>
- <div><div class="navlabel">WORKSPACE</div><div class="navitem active"><span>◫</span> Executive overview</div><div class="navitem"><span>◷</span> TAT & service KPIs</div><div class="navitem"><span>▤</span> Daily / weekly / monthly</div><div class="navitem"><span>▦</span> Parts & inventory</div><div class="navitem"><span>⚑</span> Exceptions & data quality</div></div>
- <div class="sidebottom">TRANSSION BRANCH INTELLIGENCE SYSTEM<br>Local report processing · branch workspace<br><br>Version 2 · CRM intelligence MVP</div>
+ <div class="brand"><div class="brandmark">T</div><div><b>TBIS</b><small>Transsion Branch Intelligence</small></div></div>
+ <nav>
+  <div class="navlabel">Management overview</div>
+  <button class="navbtn active" data-view="overview"><span class="ico">▦</span>Executive overview</button>
+  <button class="navbtn" data-view="tat"><span class="ico">◷</span>TAT & PO control</button>
+  <button class="navbtn" data-view="revenue"><span class="ico">◈</span>Revenue & quality</button>
+  <button class="navbtn" data-view="parts"><span class="ico">▤</span>Models & inventory</button>
+  <button class="navbtn" data-view="reports"><span class="ico">▥</span>Reports & data health</button>
+ </nav>
+ <div class="sidefoot">LOCAL ANALYSIS MODE<br>CRM data stays in this browser session.<br>TBIS prototype · management decision support</div>
 </aside>
 <main class="main">
- <div class="topline"><div class="crumb">Workspace &nbsp;›&nbsp; Islamabad Branch &nbsp;›&nbsp; Overview</div><div class="topright"><span class="localtag"><i class="dot"></i> Local processing · no server upload</span><div class="avatar">TB</div></div></div>
- <section class="hero"><div><div class="eyebrow">BRANCH PERFORMANCE CENTRE</div><h1>Branch Intelligence</h1><p>One clear view of jobs, turnaround, parts pressure, revenue and service quality.</p></div><div class="hero-actions"><button id="pack" class="btn" disabled>↓ &nbsp; Download management pack</button><button id="clear" class="btn secondary">Clear reports</button></div></section>
- <section class="panel upload">
-  <div class="uploadhead"><div><h2>Import CRM reports</h2><p>Upload one report or combine multiple non-overlapping daily / weekly / monthly exports.</p></div><span class="tag">PRIVATE · BROWSER ONLY</span></div>
-  <div class="drop" id="drop"><div class="dropicon">↑</div><div class="droptext"><strong>Drop your CRM report files here or <b>browse files</b></strong><p>CSV · TSV · TXT · XLS · XLSX · File contents are checked, not just the filename. Multiple CRM reports can be combined; duplicate JS No values are always reported. XLS/XLSX reading uses SheetJS from cdn.sheetjs.com, so an internet connection is needed for Excel files. Report data is processed in this browser and is not uploaded.</p></div><button class="btn ghost" id="browse" type="button">Choose reports</button><input class="fileinput" id="files" type="file" multiple accept=".csv,.tsv,.txt,.xls,.xlsx"></div>
-  <div class="importmeta"><div class="metaText" id="filemeta">No report loaded yet. Your CRM file stays on this device.</div><div class="metaText" id="schemaMeta"></div></div>
-  <div class="msg error" id="err" role="alert"></div><div class="msg warning" id="warn" role="status"></div><div class="msg success" id="ok" role="status"></div>
- </section>
- <section id="dash" class="hide">
-  <div class="panel filters">
-   <label class="field">FROM DATE<input id="from" type="date"></label><label class="field">TO DATE<input id="to" type="date"></label><label class="field">BRANCH<select id="shopFilter"><option value="">All branches</option></select></label><label class="field">AS-OF DATE / TIME<input id="asof" type="datetime-local"></label>
-   <label class="field">1-HOUR TARGET (%)<input id="t1" type="number" min="0" max="100" step=".1" value="97.5"></label><label class="field">2-HOUR PO TARGET (%)<input id="t2" type="number" min="0" max="100" step=".1" value="97"></label><label class="field">MONTHLY JOB TARGET<input id="jobtarget" type="number" min="1" value="600"></label><label class="field">REVENUE TARGET (PKR)<input id="revtarget" type="number" min="0" step="1000" value="1000000"></label><div class="spacer"></div><span class="periodlabel" id="periodlabel"></span>
-  </div>
-  <div class="kpihead"><h2>Executive KPI scorecard</h2><span>Calculated from the selected Created On period</span></div>
-  <div class="kpis" id="kpis"></div>
-  <div class="grid2">
-   <section class="panel chartpanel"><div class="panelhead"><div><h3>Daily incoming jobs</h3><p>Jobs grouped by Created On date</p></div><span class="legend" id="dailyTotal"></span></div><div class="bars" id="dailyChart"></div></section>
-   <section class="panel chartpanel"><div class="panelhead"><div><h3>Receiving channel mix</h3><p>How devices reached the branch</p></div></div><div class="mixlist" id="sourceMix"></div><div class="footnote" id="categoryMix"></div></section>
-  </div>
-  <div class="grid3">
-   <section class="panel listpanel"><div class="panelhead"><div><h3>Top 7 submitted models</h3><p>Most frequent devices in selected period</p></div></div><div class="ranklist" id="models"></div></section>
-   <section class="panel listpanel"><div class="panelhead"><div><h3>Top 7 consumed parts</h3><p>Ranked by recorded consumption quantity</p></div></div><div class="ranklist" id="parts"></div></section>
-   <section class="panel listpanel"><div class="panelhead"><div><h3>PO breakdown</h3><p>PO jobs by service category</p></div></div><div class="ranklist" id="poBreakdown"></div></section>
-  </div>
-  <div class="grid3">
-   <section class="panel listpanel"><div class="panelhead"><div><h3>7-day activation policy</h3><p>SWAP, DAP and DOA date coverage</p></div></div><div class="qualitygrid" id="policyPulse"></div></section>
-   <section class="panel listpanel"><div class="panelhead"><div><h3>Engineer workload</h3><p>Anonymous groups · no staff names or codes shown</p></div></div><div class="ranklist" id="engineers"></div></section>
-   <section class="panel listpanel"><div class="panelhead"><div><h3>Inventory control</h3><p>Stock comparison requires an inventory report</p></div></div><div class="qualityitem"><strong>Not connected</strong><span>Consumed parts and PO/AP fields are available, but this version does not yet import stock-on-hand reports. A separate inventory importer and material-code mapping are required before TBIS can flag avoidable POs.</span></div></section>
-  </div>
-  <div class="grid2">
-   <section class="panel chartpanel"><div class="panelhead"><div><h3>Weekly performance</h3><p>Week-by-week and previous-week comparison</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Week starts</th><th>Jobs</th><th>OW amount</th><th>PO rate</th><th>1H rate</th><th>2H PO</th><th>3-day TAT</th><th>Bounce</th><th>Avg repair TAT</th><th>CSAT</th></tr></thead><tbody id="weekly"></tbody></table></div></section>
-   <section class="panel chartpanel"><div class="panelhead"><div><h3>Monthly performance</h3><p>Consolidated month view</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Month</th><th>Jobs / target</th><th>Warranty %</th><th>OW revenue / target</th><th>PO rate</th><th>1H</th><th>2H PO</th><th>3-day TAT</th><th>RWR</th><th>Bounce</th><th>Avg TAT</th><th>CSAT</th></tr></thead><tbody id="monthly"></tbody></table></div></section>
-  </div>
-  <section class="panel listpanel" style="margin-top:14px"><div class="panelhead"><div><h3>Daily operations pulse</h3><p>New, repaired, returned and PO activity for one selected day</p></div><label class="field">ANALYSIS DATE<input id="dailyDate" type="date"></label></div><div class="qualitygrid" id="dailyPulse"></div></section>
-  <section class="panel tablepanel">
-   <div class="tablehead"><div><h3>Management action list</h3><p>Jobs needing review · personal customer, device and technician fields are excluded</p></div><div class="tabletools"><select id="exceptionType"><option value="all">All exceptions</option><option value="repair">1H repair misses</option><option value="po">2H PO misses</option><option value="nopo">NOPO ≥24h</option><option value="three">3-day TAT misses</option><option value="rfd">RFD older than 2 days</option><option value="invalid">Missing / invalid TAT</option></select><input id="jssearch" type="search" placeholder="Find JS No"></div></div>
-   <div class="tablewrap"><table><thead><tr><th>JS No</th><th>Branch</th><th>Receiving</th><th>Category</th><th>Model</th><th>Warranty</th><th>Created On</th><th>Repair Complete</th><th>TAT / Age</th><th>PO/AP</th><th>Status</th><th>Action needed</th></tr></thead><tbody id="exceptions"></tbody></table><div class="empty hide" id="noexceptions">No jobs match this view.</div></div>
-   <div class="tablehead"><span id="exceptionCount" class="metaText">0 exceptions</span><button class="btn secondary" id="exportCsv">Export safe CSV</button></div>
-  </section>
-  <section class="panel dataquality"><div class="panelhead"><div><h3>Data integrity & coverage</h3><p>Checks before management reporting</p></div><span id="integrityBadge" class="tag"></span></div><div class="qualitygrid" id="quality"></div><div class="footnote" id="qualityNotes"></div></section>
-  <section class="panel disclosure"><strong>Business-rule notes</strong><br>
-   1H applies to Smartphones received by Carry In / Online; without inventory data, this is a turnaround measure, not proof that parts were in stock. 2H PO is measured for Smartphone jobs marked Is Shortage=Yes, using the first valid PO/AP date. The 3-day view measures PO date to repair completion and is provisional until management confirms its exact start point. Returned, Repair Completed, SWAP Certification and Non Repairable are treated as terminal statuses; SWAP Approved remains open. Repair duration is calculated from Created On to Repair Complete Date. “207” is treated as an invalid date value, not a timestamp. Bounce is an in-report repeat-device indicator using prior Return On to the next Created On within 30 days; earlier history outside uploaded reports may be missing. CRM Total Amt and Accumulated Received Amt are shown separately.
-  </section>
- </section>
- <div class="footnote" style="text-align:center;margin:22px 0 4px">TBIS · Transsion Branch Intelligence System · Local browser analysis · Management review recommended for provisional KPIs</div>
+<header class="topbar">
+ <div><div class="eyebrow">Branch intelligence · Islamabad</div><h1 class="title">Branch performance dashboard</h1><p class="sub">One place to understand workload, turnaround, parts, revenue and service quality.</p></div>
+ <div class="actions"><button class="btn secondary" id="printBtn">Print report</button><button class="btn" id="exportBtn" disabled>Export all reports</button></div>
+</header>
+<section class="card upload">
+ <div class="uploadrow"><div class="uploadicon">↥</div><div class="uploadcopy"><strong>Import your CRM job-sheet reports</strong><p>Select one monthly report or several daily/weekly reports together. TBIS identifies file format from the file contents—not just the filename—and combines the job records locally.</p></div><div class="uploadbuttons"><button class="btn secondary" id="clearBtn">Clear data</button><button class="btn" id="chooseBtn">Add CRM reports</button><input id="crmFiles" class="hidden" type="file" multiple accept=".csv,.tsv,.txt,.xls,.xlsx"></div></div>
+ <div id="importMsg" class="message hidden"></div><div id="filechips" class="filechips"></div>
+ <div class="smallmuted" style="margin-top:10px">Privacy: customer names, contact numbers, IMEI/SN, technician names and other personal/device identifiers are never shown or included in exported reports. Device identifiers may be compared in memory for bounce analysis and are not displayed or saved.</div>
+</section>
+<div class="filters">
+ <label class="field">Reporting period<select id="period"><option value="all">All uploaded dates</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option><option value="custom">Custom dates</option></select></label>
+ <label class="field" id="fromWrap">From<input type="date" id="fromDate"></label>
+ <label class="field" id="toWrap">To<input type="date" id="toDate"></label>
+ <label class="field">As-of date/time<input type="datetime-local" id="asof"></label>
+ <div class="filterspacer"></div><div class="periodtag" id="periodInfo">Import a CRM report to begin.</div>
+</div>
+<div id="emptyState" class="card panel"><div style="font-size:25px;margin-bottom:8px">📊</div><h3 style="margin:0 0 5px">Your branch dashboard is ready</h3><p class="sub">Start by importing your CRM job-sheet report. You can combine multiple reports to build daily, weekly and monthly views.</p><button class="btn" style="margin-top:14px" id="emptyChoose">Import first report</button></div>
+
+<section class="tabview active" id="view-overview">
+ <div class="grid kpis" id="overviewKpis"></div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>Daily operating trend</h3><p>New jobs, repairs completed and devices returned to customers</p></div><span class="tag">By date</span></div><div id="dailyChart" class="bars"></div><div class="legend"><span><i class="dot"></i>New jobs</span><span><i class="dot green"></i>Repairs completed</span><span><i class="dot orange"></i>Returned</span></div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>Where jobs came from</h3><p>CRM receiving channel mix</p></div><span class="tag">Job count</span></div><div id="sourceChart" class="bars"></div><div class="note">Channel mapping uses the CRM <strong>Reference From</strong> field: Carry In, Express and Online.</div></div>
+ </div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>Warranty mix</h3><p>Target mix: 60% under warranty · 40% out of warranty</p></div></div><div id="warrantyChart"></div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>Service category breakdown</h3><p>Normal repair, DAP, DOA, RWR and SWAP</p></div></div><div id="serviceChart" class="bars"></div></div>
+ </div>
+ <div class="card panel"><div class="panelhead"><div><h3>Management attention list</h3><p>Open, overdue, missing-timestamp and ready-for-delivery cases</p></div><span class="tag" id="attentionCount">0 items</span></div><div id="attentionTable" class="tablewrap"></div></div>
+</section>
+
+<section class="tabview" id="view-tat">
+ <div class="grid kpis" id="tatKpis"></div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>PO timing compliance</h3><p>First PO/AP timestamp compared with job creation</p></div><span class="tag">Target 97%</span></div><div id="poTiming"></div><div class="note">The 2-hour PO KPI is calculated for records classified as smartphones with <strong>Is Shortage = Yes</strong>. Jobs without a PO date are reported as unknown, not assumed timely.</div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>Repair turnaround distribution</h3><p>Completed jobs grouped by elapsed time</p></div></div><div id="tatDistribution" class="bars"></div><div class="note">Duration uses <strong>Repair Complete Date − Created On</strong>. Invalid or missing timestamps are excluded from duration percentages and shown as data-quality issues.</div></div>
+ </div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>PO repairs by service type</h3><p>PO Repairs, PO SWAP, PO DAP and PO DOA</p></div></div><div id="poBreakdown" class="bars"></div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>Open job ageing</h3><p>Open jobs by age as of the selected date/time</p></div></div><div id="openAging" class="bars"></div></div>
+ </div>
+ <div class="card panel"><div class="panelhead"><div><h3>PO and repair exceptions</h3><p>Jobs needing follow-up or whose timestamps need checking</p></div></div><div id="tatExceptions" class="tablewrap"></div></div>
+</section>
+
+<section class="tabview" id="view-revenue">
+ <div class="grid kpis" id="revenueKpis"></div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>Out-warranty revenue progress</h3><p>Cash received from out-warranty jobs against PKR 1,000,000 monthly target</p></div></div><div id="revenueProgress"></div><div class="note">Revenue uses <strong>Accumulated Received Amt</strong> for out-warranty jobs. Quoted amounts and total repair amounts are not treated as collected revenue.</div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>7-day activation policy</h3><p>Activation-to-receipt elapsed days for DAP, DOA and SWAP</p></div></div><div id="activationBreakdown" class="bars"></div><div class="note">Eligibility proxy: Created On is between 0 and 7 calendar days after Activation Time. Missing activation timestamps are unknown, not ineligible.</div></div>
+ </div>
+ <div class="grid threecol" id="qualityCards"></div>
+ <div class="card panel"><div class="panelhead"><div><h3>Repeat-device / bounce review</h3><p>Same device identifier received again within 30 days in the imported history</p></div><span class="tag">Provisional</span></div><div id="bouncePanel"></div><div class="note">Bounce detection compares device identifiers and fault fields in memory only. It cannot see earlier jobs that were not included in the uploaded reports. No IMEI/SN values are displayed or exported.</div></div>
+</section>
+
+<section class="tabview" id="view-parts">
+ <div class="grid kpis" id="partsKpis"></div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>Top 7 submitted models</h3><p>Most frequently received models in the selected period</p></div></div><div id="topModels" class="bars"></div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>Top 7 consumed parts</h3><p>Based on CRM consumed material descriptions and quantities</p></div></div><div id="topParts" class="bars"></div></div>
+ </div>
+ <div class="grid twocol">
+  <div class="card panel"><div class="panelhead"><div><h3>Inventory report comparison</h3><p>Match PO material codes against available branch stock</p></div></div><div class="uploadrow"><div class="uploadicon">▤</div><div class="uploadcopy"><strong>Optional inventory report</strong><p>Upload a stock report containing a material/part code and available quantity column.</p></div><button id="inventoryBtn" class="btn secondary">Add inventory file</button><input id="inventoryFile" class="hidden" type="file" accept=".csv,.tsv,.txt,.xls,.xlsx"></div><div id="inventoryMsg" class="message hidden"></div><div id="inventoryResult" style="margin-top:12px"></div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>PO material demand</h3><p>Most requested material codes from PO/AP records</p></div></div><div id="poMaterials" class="bars"></div></div>
+ </div>
+ <div class="card panel"><div class="panelhead"><div><h3>Possible PO despite stock availability</h3><p>Only shown when an inventory file has been successfully mapped</p></div></div><div id="stockFlags"></div></div>
+</section>
+
+<section class="tabview" id="view-reports">
+ <div class="grid kpis" id="dataKpis"></div>
+ <div class="card panel" style="margin-bottom:14px"><div class="panelhead"><div><h3>One-click management reporting</h3><p>Export a workbook combining daily, weekly and monthly analysis, KPI summary, exceptions and top models/parts.</p></div><button class="btn" id="exportBtn2" disabled>Export combined workbook</button></div><div class="note">The workbook contains analysis fields only. It excludes customer names, contact details, IMEI/SN, device identifiers and technician personal details. Use <strong>Print report</strong> for a management-ready PDF using your browser's Print → Save as PDF option.</div></div>
+ <div class="reporttables">
+  <div class="card panel"><div class="panelhead"><div><h3>Daily summary</h3><p>New jobs, repaired, returned and collected revenue</p></div></div><div id="dailyTable" class="tablewrap"></div></div>
+  <div class="card panel"><div class="panelhead"><div><h3>Weekly summary</h3><p>Current and previous week comparison data</p></div></div><div id="weeklyTable" class="tablewrap"></div></div>
+ </div>
+ <div class="card panel" style="margin-top:13px"><div class="panelhead"><div><h3>Monthly summary</h3><p>Monthly branch health and target tracking</p></div></div><div id="monthlyTable" class="tablewrap"></div></div>
+ <h2 class="section-title">Data quality & validation</h2>
+ <div class="card panel" style="margin-bottom:14px"><div class="panelhead"><div><h3>Integrity checks</h3><p>TBIS checks key totals before management export</p></div><span class="tag" id="integrityStatus">Waiting for data</span></div><div id="integrityGrid" class="integrity"></div><div id="integrityMsg" class="note"></div></div>
+ <div class="card panel"><div class="panelhead"><div><h3>Classify device models</h3><p>Set Smartphone / Feature Phone so the 1-hour and 2-hour KPIs use the correct eligible population. Model classifications are saved on this browser only.</p></div><span class="tag" id="classificationCoverage">0% classified</span></div><div id="modelMap" class="modelmap"></div></div>
+ <div class="note">Metrics requiring other sources are intentionally marked unavailable: customer satisfaction needs call-center feedback; stock availability verification needs an inventory balance report; and full bounce history needs prior-period CRM reports. TBIS does not fabricate these values.</div>
+</section>
+<div class="footer">TBIS local prototype · KPI figures are based only on imported records and configured rules. Confirm company policy definitions before using as official performance certification.</div>
 </main></div>
 <script>
 (function(root){
@@ -72,529 +118,133 @@ const ALIASES={
  created:['createdon','createddate','createdat','created'],
  complete:['repaircompletedate','repaircompleteddate','repaircompletiondate'],
  status:['documentstatusname','documentstatus','jobstatus','statusname'],
- warranty:['warrantystatus'], shop:['shopcode','branchcode'], shopName:['shopname','branchname']
+ warranty:['warrantystatus'],shop:['shopcode','branchcode'],shopName:['shopname','branchname']
 };
-function clean(v){return String(v??'').replace(/^\uFEFF/,'').replace(/\u00a0/g,' ').replace(/\0/g,'').replace(/[\u200B-\u200D\uFEFF]/g,'').trim()}
-function norm(v){return clean(v).replace(/^['"\s]+|['"\s]+$/g,'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
-function compact(v){return norm(v).replace(/\s/g,'')}
+function clean(v){return String(v??'').replace(/^\\uFEFF/,'').replace(/\\u00a0/g,' ').replace(/\\0/g,'').replace(/[\\u200B-\\u200D\\uFEFF]/g,'').trim()}
+function norm(v){return clean(v).replace(/^['"\\s]+|['"\\s]+$/g,'').toLowerCase().normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim().replace(/\\s+/g,' ')}
+function compact(v){return norm(v).replace(/\\s/g,'')}
 function columnIndex(row,keys){for(let i=0;i<row.length;i++)if(keys.includes(compact(row[i])))return i;return -1}
 function validHeader(row){return Array.isArray(row)&&row.length>=10&&columnIndex(row,ALIASES.job)>=0&&columnIndex(row,ALIASES.created)>=0&&[ALIASES.complete,ALIASES.status,ALIASES.shop,ALIASES.shopName].some(k=>columnIndex(row,k)>=0)}
-function decodeCandidates(bytes){
- const out=[];
- if(bytes.length>=3&&bytes[0]===0xEF&&bytes[1]===0xBB&&bytes[2]===0xBF)out.push('utf-8-sig');
- if(bytes.length>=2&&bytes[0]===0xFF&&bytes[1]===0xFE)out.push('utf-16le');
- if(bytes.length>=2&&bytes[0]===0xFE&&bytes[1]===0xFF)out.push('utf-16be');
- let even=0,odd=0;for(let i=0;i<Math.min(bytes.length,8192);i++)if(bytes[i]===0)(i%2?odd++:even++);
- if(odd>8&&odd>even*2)out.push('utf-16le');if(even>8&&even>odd*2)out.push('utf-16be');
- out.push('utf-8','windows-1252');
- return [...new Set(out)];
-}
-function decode(bytes,encoding){
- if(encoding==='utf-8-sig')return new TextDecoder('utf-8').decode(bytes.subarray(3));
- const decoder=new TextDecoder(encoding,{fatal:encoding!=='windows-1252'});
- return decoder.decode(bytes);
-}
-function parseDelimited(text,delimiter){
- const rows=[];let row=[],field='',quoted=false,afterQuote=false;
- for(let i=0;i<text.length;i++){
-  const ch=text[i];
-  if(quoted){
-   if(ch==='"'&&text[i+1]==='"'){field+='"';i++}
-   else if(ch==='"'){quoted=false;afterQuote=true}
-   else field+=ch;
-   continue;
-  }
-  if(afterQuote){
-   if(ch===delimiter){row.push(field);field='';afterQuote=false;continue}
-   if(ch==='\r'||ch==='\n'){row.push(field);if(row.some(v=>clean(v)))rows.push(row);row=[];field='';afterQuote=false;if(ch==='\r'&&text[i+1]==='\n')i++;continue}
-   if(ch===' '||ch==='\t')continue;
-   throw new Error('Malformed delimited file: unexpected character after a closing quote.');
-  }
-  if(ch==='"'&&field===''){quoted=true;continue}
-  if(ch==='"')throw new Error('Malformed delimited file: quote found inside an unquoted field.');
-  if(ch===delimiter){row.push(field);field='';continue}
-  if(ch==='\r'||ch==='\n'){row.push(field);if(row.some(v=>clean(v)))rows.push(row);row=[];field='';if(ch==='\r'&&text[i+1]==='\n')i++;continue}
-  field+=ch;
- }
- if(quoted)throw new Error('Malformed delimited file: quoted field was not closed.');
- if(field.length||row.length){row.push(field);if(row.some(v=>clean(v)))rows.push(row)}
- return rows;
-}
-function detectFileKind(input,name=''){const b=input instanceof Uint8Array?input:new Uint8Array(input);if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&([0x03,0x05,0x07].includes(b[2])))return 'xlsx';if(b.length>=8&&b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0&&b[4]===0xA1&&b[5]===0xB1&&b[6]===0x1A&&b[7]===0xE1)return 'xls';validateExtension(name||'report.csv');return 'text'}
-function validateExtension(name){const ext=String(name||'').split('.').pop().toLowerCase();if(!['csv','tsv','txt','xls','xlsx'].includes(ext))throw new Error('Unsupported file format. Choose CSV, TSV, TXT, XLS, or XLSX.');return ext}
-function parseBytes(input){
- const bytes=input instanceof Uint8Array?input:new Uint8Array(input);
- if(!bytes.length)throw new Error('Selected file is empty.');
- let best=null,lastError=null;
- for(const encoding of decodeCandidates(bytes)){
-  let text;try{text=decode(bytes,encoding)}catch(e){lastError=e;continue}
-  for(const delimiter of ['\t',',',';','|']){
-   let rows;try{rows=parseDelimited(text,delimiter)}catch(e){lastError=e;continue}
-   for(let headerIndex=0;headerIndex<rows.length;headerIndex++){
-    const header=rows[headerIndex];if(!validHeader(header))continue;
-    const jobIndex=columnIndex(header,ALIASES.job),createdIndex=columnIndex(header,ALIASES.created);
-    const dataRows=rows.slice(headerIndex+1);
-    const jobRows=dataRows.filter(r=>clean(r[jobIndex])).length;
-    const plausible=dataRows.some(r=>clean(r[jobIndex])&&r.length>=Math.min(header.length,10));
-    if(!plausible)continue;
-    const recognized=[ALIASES.complete,ALIASES.status,ALIASES.shop,ALIASES.shopName,ALIASES.warranty].filter(k=>columnIndex(header,k)>=0).length;
-    const score=header.length*100+recognized*25+Math.min(jobRows,1000)/1000-headerIndex/100000;
-    if(!best||score>best.score)best={encoding,delimiter,rows,headerIndex,header,jobRows,score,jobIndex,createdIndex};
-    break;
-   }
-  }
- }
- if(!best){
-  if(lastError&&/Malformed/.test(lastError.message))throw lastError;
-  throw new Error('CRM header not found. A valid header must contain JS No, Created On, and other CRM columns (including a completion, status, or shop column). The entire file was checked.');
- }
- const ids=best.rows.slice(best.headerIndex+1).map(r=>clean(r[best.jobIndex])).filter(Boolean);
- const unique=new Set(ids);
- return {rows:best.rows,header:best.header,headerIndex:best.headerIndex,encoding:best.encoding,delimiter:best.delimiter,columns:best.header.length,rowCount:ids.length,uniqueCount:unique.size,duplicateCount:ids.length-unique.size,physicalDataRows:best.rows.length-best.headerIndex-1,required:{jsNo:true,createdOn:true}};
-}
-root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes,validateExtension,detectFileKind};
-if(typeof module!=='undefined'&&module.exports)module.exports=root.TBISImporter;
+function decodeCandidates(bytes){const out=[];if(bytes.length>=3&&bytes[0]===0xEF&&bytes[1]===0xBB&&bytes[2]===0xBF)out.push('utf-8-sig');if(bytes.length>=2&&bytes[0]===0xFF&&bytes[1]===0xFE)out.push('utf-16le');if(bytes.length>=2&&bytes[0]===0xFE&&bytes[1]===0xFF)out.push('utf-16be');let even=0,odd=0;for(let i=0;i<Math.min(bytes.length,8192);i++)if(bytes[i]===0)(i%2?odd++:even++);if(odd>8&&odd>even*2)out.push('utf-16le');if(even>8&&even>odd*2)out.push('utf-16be');out.push('utf-8','windows-1252');return [...new Set(out)]}
+function decode(bytes,encoding){if(encoding==='utf-8-sig')return new TextDecoder('utf-8').decode(bytes.subarray(3));return new TextDecoder(encoding,{fatal:encoding!=='windows-1252'}).decode(bytes)}
+function parseDelimited(text,delimiter){const rows=[];let row=[],field='',quoted=false,afterQuote=false;for(let i=0;i<text.length;i++){const ch=text[i];if(quoted){if(ch==='"'&&text[i+1]==='"'){field+='"';i++}else if(ch==='"'){quoted=false;afterQuote=true}else field+=ch;continue}if(afterQuote){if(ch===delimiter){row.push(field);field='';afterQuote=false;continue}if(ch==='\\r'||ch==='\\n'){row.push(field);if(row.some(v=>clean(v)))rows.push(row);row=[];field='';afterQuote=false;if(ch==='\\r'&&text[i+1]==='\\n')i++;continue}if(ch===' '||ch==='\\t')continue;throw new Error('Malformed delimited file: unexpected character after a closing quote.')}if(ch==='"'&&field===''){quoted=true;continue}if(ch==='"')throw new Error('Malformed delimited file: quote found inside an unquoted field.');if(ch===delimiter){row.push(field);field='';continue}if(ch==='\\r'||ch==='\\n'){row.push(field);if(row.some(v=>clean(v)))rows.push(row);row=[];field='';if(ch==='\\r'&&text[i+1]==='\\n')i++;continue}field+=ch}if(quoted)throw new Error('Malformed delimited file: quoted field was not closed.');if(field.length||row.length){row.push(field);if(row.some(v=>clean(v)))rows.push(row)}return rows}
+function detectFileKind(input,name){const b=input instanceof Uint8Array?input:new Uint8Array(input);if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&(b[2]===0x03||b[2]===0x05||b[2]===0x07))return 'xlsx';if(b.length>=8&&b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0&&b[4]===0xA1&&b[5]===0xB1&&b[6]===0x1A&&b[7]===0xE1)return 'xls';const ext=String(name||'').split('.').pop().toLowerCase();if(['xlsx','xls'].includes(ext))return ext;return 'text'}
+function parseBytes(input){const bytes=input instanceof Uint8Array?input:new Uint8Array(input);if(!bytes.length)throw new Error('Selected file is empty.');let best=null,lastError=null;for(const encoding of decodeCandidates(bytes)){let text;try{text=decode(bytes,encoding)}catch(e){lastError=e;continue}for(const delimiter of ['\\t',',',';','|']){let rows;try{rows=parseDelimited(text,delimiter)}catch(e){lastError=e;continue}for(let headerIndex=0;headerIndex<rows.length;headerIndex++){const header=rows[headerIndex];if(!validHeader(header))continue;const jobIndex=columnIndex(header,ALIASES.job);const dataRows=rows.slice(headerIndex+1);const ids=dataRows.map(r=>clean(r[jobIndex])).filter(Boolean);const plausible=dataRows.some(r=>clean(r[jobIndex])&&r.length>=Math.min(header.length,10));if(!plausible)continue;const recognized=[ALIASES.complete,ALIASES.status,ALIASES.shop,ALIASES.shopName,ALIASES.warranty].filter(k=>columnIndex(header,k)>=0).length;const score=header.length*100+recognized*25+Math.min(ids.length,1000)/1000-headerIndex/100000;if(!best||score>best.score)best={encoding,delimiter,rows,headerIndex,header,ids,score};break}}}if(!best){if(lastError&&/Malformed/.test(lastError.message))throw lastError;throw new Error('CRM header not found. Expected JS No and Created On plus other CRM columns. The complete file was checked.')}const unique=new Set(best.ids);return{rows:best.rows,header:best.header,headerIndex:best.headerIndex,encoding:best.encoding,delimiter:best.delimiter,columns:best.header.length,rowCount:best.ids.length,uniqueCount:unique.size,duplicateCount:best.ids.length-unique.size,physicalDataRows:best.rows.length-best.headerIndex-1}}
+root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes,detectFileKind};
 })(typeof window!=='undefined'?window:globalThis);
-
 </script>
 <script>
 (function(){
-"use strict";
+'use strict';
 const $=id=>document.getElementById(id);
-let records=[],fileMetas=[],currentExceptions=[],headersFound=[],isBusy=false;
-const dateText=d=>d?new Intl.DateTimeFormat("en-PK",{dateStyle:"medium",timeStyle:"short"}).format(d):"—";
-const localKey=d=>d?d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"):"";
-const dOnly=d=>localKey(d);
-const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const compact=v=>TBISImporter.compact(v);
-const parseDate=v=>{const s=TBISImporter.clean(v);if(!s||s==="207"||s.toLowerCase()==="null")return null;const m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);if(m){const d=new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));return Number.isNaN(+d)?null:d}const d=new Date(s);return Number.isNaN(+d)?null:d};
-const num=v=>{if(v===null||v===undefined||v==="")return 0;const n=Number(String(v).replace(/,/g,"").replace(/[^\d.-]/g,""));return Number.isFinite(n)?n:0};
-const money=n=>"PKR "+Math.round(n||0).toLocaleString("en-PK");
-const percent=(a,b)=>b?((a/b)*100).toFixed(1)+"%":"—";
-const minsText=m=>{if(m===null||!Number.isFinite(m))return"Unknown";if(m<0)return"Invalid order";const days=Math.floor(m/1440),hrs=Math.floor((m%1440)/60),mins=Math.round(m%60);return days?days+"d "+hrs+"h":hrs+"h "+mins+"m"};
-const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
-function headerMap(header){const h={};header.forEach((v,i)=>{const k=compact(v);if(k&&!Object.prototype.hasOwnProperty.call(h,k))h[k]=i});return h}
-function get(row,map,names){for(const n of names){const i=map[compact(n)];if(i!==undefined)return TBISImporter.clean(row[i])}return""}
-const AL={
- job:["JS No","JS Number"],created:["Created On"],complete:["Repair Complete Date"],status:["Document Status Name"],shop:["ShopCode"],shopName:["ShopName"],source:["Reference From"],category:["Category"],warranty:["Warranty Status"],brand:["Brand"],model:["Model"],service:["Service Type"],shortage:["Is Shortage"],activation:["Activation Time"],returned:["Return On"],currency:["Currency"],amount:["Total Amt"],received:["Accumulated Received Amt"],delivery:["Actual Logistics Delivery Date"],device1:["IMEI/SN1"],device2:["IMEI/SN2"],engineer:["Repaired By (code)"]
+const norm=s=>TBISImporter.norm(s);
+const compact=s=>TBISImporter.compact(s);
+let rawJobs=[],fileMeta=[],inventoryMap=null,inventoryName='',activeView='overview',lastAnalysis=null;
+const modelOverrides=(()=>{try{return JSON.parse(localStorage.getItem('tbis-model-categories')||'{}')}catch(e){return{}}})();
+const terminalStatuses=['returned','closed','repair completed','non repairable','swap certification','swap approved'];
+const currencyFormat=n=>Number(n||0).toLocaleString(undefined,{maximumFractionDigits:0});
+const money=n=>'PKR '+currencyFormat(n);
+const safe=v=>String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function parseDate(v){if(v instanceof Date&&!isNaN(v.getTime()))return v;if(typeof v==='number'&&Number.isFinite(v)){const d=new Date(Math.round((v-25569)*86400*1000));return isNaN(+d)?null:d}const s=String(v??'').trim();if(!s)return null;let m=s.match(/^(\\d{4})[-/](\\d{1,2})[-/](\\d{1,2})(?:[ T](\\d{1,2}):(\\d{2})(?::(\\d{2}))?)?/);if(m){const d=new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));return isNaN(+d)?null:d}const d=new Date(s);return isNaN(+d)?null:d}
+function localInputValue(d){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,16)}
+function showMessage(id,kind,text){const el=$(id);el.className='message '+kind;el.textContent=text;el.classList.remove('hidden')}
+function fieldIndex(headers,names){const wanted=names.map(compact);for(let i=0;i<headers.length;i++)if(wanted.includes(compact(headers[i])))return i;return -1}
+const FIELDS={
+ job:['JS No','JS No.'],created:['Created On'],status:['Document Status Name'],reference:['Reference From'],received:['Received From'],shopCode:['ShopCode'],shopName:['ShopName'],warranty:['Warranty Status'],complete:['Repair Complete Date'],returned:['Return On'],model:['Model'],brand:['Brand'],modelType:['Model Type'],service:['Service Type'],activation:['Activation Time'],shortage:['Is Shortage'],amount:['Accumulated Received Amt','TotalReceiveAmount'],currency:['Currency'],rwr:['RWR Reason'],fault1:['Fault_1'],fault2:['Fault_2'],fault3:['Fault_3'],symptom:['CallSymptom'],isDelivery:['Is Delivery'],
+ poCode1:['PO/APCode1'],poDate1:['PO/APDate1'],poMat1:['PO/AP_1Material Code_1'],poDesc1:['PO/AP_1Material Desc_1'],poQty1:['PO/AP_1Qty1'],poCode2:['PO/APCode2'],poDate2:['PO/APDate2'],poMat2:['PO/AP_2Material Code_1'],poDesc2:['PO/AP_2Material Desc_1'],poQty2:['PO/AP_2Qty1'],poCode3:['PO/APCode3'],poDate3:['PO/APDate3'],poMat3:['PO/AP_3Material Code_1'],poDesc3:['PO/AP_3Material Desc_1'],poQty3:['PO/AP_3Qty1'],
+ consumeCode1:['Consume Material Code_1'],consumeDesc1:['Consume Material Desc_1'],consumeQty1:['Consume QTY_1'],consumeCode2:['Consume Material Code_2'],consumeDesc2:['Consume Material Desc_2'],consumeQty2:['Consume QTY_2'],consumeCode3:['Consume Material Code_3'],consumeDesc3:['Consume Material Desc_3'],consumeQty3:['Consume QTY_3'],
+ device1:['IMEI/SN1'],device2:['IMEI/SN2'],device3:['New IMEI/SN1'],device4:['New IMEI/SN2']
 };
-function normalizeRow(row,map,sourceFile){
- const poCodes=[get(row,map,["PO/APCode1"]),get(row,map,["PO/APCode2"]),get(row,map,["PO/APCode3"])];
- const poRaw=[get(row,map,["PO/APCode1"]),get(row,map,["PO/APDate1"]),get(row,map,["PO/APCode2"]),get(row,map,["PO/APDate2"]),get(row,map,["PO/APCode3"]),get(row,map,["PO/APDate3"])];
- const poDates=[parseDate(get(row,map,["PO/APDate1"])),parseDate(get(row,map,["PO/APDate2"])),parseDate(get(row,map,["PO/APDate3"]))].filter(Boolean).sort((a,b)=>a-b);
- const category=get(row,map,AL.category).toUpperCase(),source=get(row,map,AL.source),status=get(row,map,AL.status);
- const faults=[1,2,3].map(i=>get(row,map,["Fault_"+i])).map(v=>compact(v)).filter(Boolean);
- const device=get(row,map,AL.device1)||get(row,map,AL.device2);
- const consumed=[];
- for(let i=1;i<=3;i++){const code=get(row,map,["Consume Material Code_"+i]);if(code){consumed.push({code,desc:get(row,map,["Consume Material Desc_"+i]),qty:num(get(row,map,["Consume QTY_"+i]))})}}
- return {
-  job:get(row,map,AL.job),createdRaw:get(row,map,AL.created),createdAt:parseDate(get(row,map,AL.created)),
-  completeRaw:get(row,map,AL.complete),completedAt:parseDate(get(row,map,AL.complete)),
-  returnRaw:get(row,map,AL.returned),returnAt:parseDate(get(row,map,AL.returned)),
-  activationAt:parseDate(get(row,map,AL.activation)),deliveryAt:parseDate(get(row,map,AL.delivery)),
-  status,shop:get(row,map,AL.shop),shopName:get(row,map,AL.shopName),source,
-  category,warranty:get(row,map,AL.warranty),brand:get(row,map,AL.brand),model:get(row,map,AL.model),
-  service:get(row,map,AL.service),shortage:get(row,map,AL.shortage).toLowerCase()==="yes",
-  hasPO:poRaw.some(v=>String(v||"").trim()!==""),poDate:poDates[0]||null,poCodes,
-  amount:num(get(row,map,AL.amount)),received:num(get(row,map,AL.received)),currency:get(row,map,AL.currency)||"Unknown",
-  consumed,deviceKey:device.replace(/\s/g,"").toUpperCase(),faultSig:faults.join("|"),engineerKey:get(row,map,AL.engineer),sourceFile
- };
+function makeRecords(headers,rows,fileName){const indexes={};for(const k in FIELDS)indexes[k]=fieldIndex(headers,FIELDS[k]);if(indexes.job<0||indexes.created<0)throw new Error('This file does not contain the required JS No and Created On columns.');const get=(row,k)=>{const i=indexes[k];return i>=0&&i<row.length?row[i]:''};const out=[];for(let i=0;i<rows.length;i++){const row=rows[i];const js=TBISImporter.clean(get(row,'job'));if(!js)continue;const poValues=['poCode1','poDate1','poCode2','poDate2','poCode3','poDate3'].map(k=>get(row,k));const poDates=['poDate1','poDate2','poDate3'].map(k=>parseDate(get(row,k))).filter(Boolean);const deviceKeys=['device1','device2','device3','device4'].map(k=>TBISImporter.clean(get(row,k))).filter(Boolean);const fault=[get(row,'fault1'),get(row,'fault2'),get(row,'fault3')].map(TBISImporter.clean).filter(Boolean);const r={job:js,createdRaw:get(row,'created'),createdAt:parseDate(get(row,'created')),status:TBISImporter.clean(get(row,'status')),reference:TBISImporter.clean(get(row,'reference')),received:TBISImporter.clean(get(row,'received')),shopCode:TBISImporter.clean(get(row,'shopCode')),shopName:TBISImporter.clean(get(row,'shopName')),warranty:TBISImporter.clean(get(row,'warranty')),completeRaw:get(row,'complete'),completeAt:parseDate(get(row,'complete')),returnRaw:get(row,'returned'),returnAt:parseDate(get(row,'returned')),model:TBISImporter.clean(get(row,'model')),brand:TBISImporter.clean(get(row,'brand')),modelType:TBISImporter.clean(get(row,'modelType')),service:TBISImporter.clean(get(row,'service')),activationAt:parseDate(get(row,'activation')),shortage:norm(get(row,'shortage')),amount:Number(String(get(row,'amount')??'').replace(/,/g,''))||0,currency:TBISImporter.clean(get(row,'currency'))||'PKR',rwrReason:TBISImporter.clean(get(row,'rwrReason')),hasPO:poValues.some(v=>TBISImporter.clean(v)),poAt:poDates.length?new Date(Math.min(...poDates.map(d=>+d))):null,poDateMissing:false,deviceKeys,faultKey:fault.map(norm).sort().join('|')||norm(get(row,'symptom')),faultText:fault.join(' / '),file:fileName,rowNumber:i+1,materialPO:[],consumed:[]};r.poDateMissing=r.hasPO&&!r.poAt;for(let x=1;x<=3;x++){const code=TBISImporter.clean(get(row,'poMat'+x)),desc=TBISImporter.clean(get(row,'poDesc'+x)),qty=Number(String(get(row,'poQty'+x)||'').replace(/,/g,''))||0;if(code||desc)r.materialPO.push({code,desc,qty})}for(let x=1;x<=3;x++){const code=TBISImporter.clean(get(row,'consumeCode'+x)),desc=TBISImporter.clean(get(row,'consumeDesc'+x)),qty=Number(String(get(row,'consumeQty'+x)||'').replace(/,/g,''))||0;if(code||desc)r.consumed.push({code,desc,qty})}out.push(r)}return out}
+async function parseCrmFile(file){const bytes=new Uint8Array(await file.arrayBuffer()),kind=TBISImporter.detectFileKind(bytes,file.name);if(kind==='xlsx'||kind==='xls'){if(!window.XLSX)throw new Error('This is an Excel workbook, but the spreadsheet reader has not loaded. Connect to the internet and reopen TBIS.');const wb=XLSX.read(bytes,{type:'array',cellDates:true,cellNF:false,cellStyles:false,cellFormula:false});for(const name of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:'',raw:false,blankrows:false,dateNF:'yyyy-mm-dd hh:mm:ss'});const h=rows.findIndex(TBISImporter.validHeader);if(h>=0){const headers=rows[h].map((v,i)=>TBISImporter.clean(v)||('Column '+(i+1)));return{records:makeRecords(headers,rows.slice(h+1),file.name),kind,columns:headers.length,encoding:'Excel workbook',delimiter:name,sheet:name}}}throw new Error('No valid CRM header found in the workbook. Expected JS No and Created On plus other CRM columns.')}const parsed=TBISImporter.parseBytes(bytes);return{records:makeRecords(parsed.header,parsed.rows.slice(parsed.headerIndex+1),file.name),kind,columns:parsed.columns,encoding:parsed.encoding,delimiter:parsed.delimiter}}
+async function loadCrmFiles(files){if(!files.length)return;const btn=$('chooseBtn');btn.disabled=true;showMessage('importMsg','warn','Reading report files locally and checking the CRM structure…');let added=0,notices=[];for(const file of files){try{const result=await parseCrmFile(file);rawJobs.push(...result.records);fileMeta.push({name:file.name,rows:result.records.length,columns:result.columns,kind:result.kind,encoding:result.encoding,delimiter:result.delimiter});added+=result.records.length;notices.push(file.name+': '+result.records.length+' JS No records, '+result.columns+' columns, '+result.encoding+(result.kind==='text'?', delimiter '+(result.delimiter==='\\t'?'TAB':result.delimiter):', '+result.sheet))}catch(e){notices.push(file.name+': NOT IMPORTED — '+(e.message||'Unknown import error'))}}btn.disabled=false;$('crmFiles').value='';if(added){refreshPeriodDefaults();renderAll();showMessage('importMsg','success','Imported '+added.toLocaleString()+' job rows.\\n'+notices.join('\\n')+'\\n\\nImported rows and unique JS No values are counted separately. Duplicate IDs are visible in Data Health.')}else showMessage('importMsg','error',notices.join('\\n')||'No file was imported.');renderChips()}
+function renderChips(){$('filechips').innerHTML=fileMeta.map(f=>'<span class="filechip">'+safe(f.name)+' · '+f.rows.toLocaleString()+' jobs · '+f.columns+' columns</span>').join('')}
+function uniqueLatest(){const map=new Map();for(const r of rawJobs)map.set(r.job,r);return [...map.values()]}
+function isTerminal(r){const s=norm(r.status);return !!r.completeAt||terminalStatuses.includes(s)}
+function isOpen(r){return !isTerminal(r)}
+function hasPo(r){return r.hasPO}
+function modelClass(r){const key=r.model||'(model missing)';if(modelOverrides[key])return modelOverrides[key];if(/^(mainstream model|high.end model|flagship model)$/i.test(r.modelType))return 'SP';return 'Unknown'}
+function refreshPeriodDefaults(){const ds=uniqueLatest().map(r=>r.createdAt).filter(Boolean).sort((a,b)=>a-b);if(ds.length){$('fromDate').value=ds[0].toISOString().slice(0,10);$('toDate').value=ds[ds.length-1].toISOString().slice(0,10)}}
+function rangeForPeriod(){const p=$('period').value,now=new Date();let from=$('fromDate').value?new Date($('fromDate').value+'T00:00:00'):null,to=$('toDate').value?new Date($('toDate').value+'T23:59:59'):null;if(p==='today'){from=new Date(now.getFullYear(),now.getMonth(),now.getDate());to=new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59)}else if(p==='week'){const day=(now.getDay()+6)%7;from=new Date(now.getFullYear(),now.getMonth(),now.getDate()-day);to=new Date(from.getFullYear(),from.getMonth(),from.getDate()+6,23,59,59)}else if(p==='month'){from=new Date(now.getFullYear(),now.getMonth(),1);to=new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59)}else if(p==='all'){from=null;to=null}return{from,to}}
+function filteredJobs(){const range=rangeForPeriod();return uniqueLatest().filter(r=>!r.createdAt||(!range.from&&!range.to)||((!range.from||r.createdAt>=range.from)&&(!range.to||r.createdAt<=range.to)))}
+function durationMinutes(a,b){return a&&b?(b-a)/60000:null}
+function humanDuration(minutes){if(minutes===null||!Number.isFinite(minutes))return'Unknown';if(minutes<0)return'Invalid order';const total=Math.floor(minutes),days=Math.floor(total/1440),hours=Math.floor(total%1440/60),mins=total%60;return days?days+'d '+hours+'h '+mins+'m':hours+'h '+mins+'m'}
+function dateText(d){return d?new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(d):'—'}
+function dayKey(d){return d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'):''}
+function monthKey(d){return d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'):''}
+function weekStart(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);return dayKey(x)}
+function pct(a,b){return b?100*a/b:null}
+function sum(a,fn){return a.reduce((s,x)=>s+(Number(fn(x))||0),0)}
+function fmtPct(v){return v===null?'—':v.toFixed(1)+'%'}
+function makeAnalysis(){
+ const jobs=filteredJobs(),asof=parseDate($('asof').value)||new Date(),completed=jobs.filter(r=>!!r.completeAt),under=jobs.filter(r=>norm(r.warranty)==='under warranty'),out=jobs.filter(r=>norm(r.warranty)==='out warranty'),po=jobs.filter(hasPo),open=jobs.filter(isOpen),rfd=jobs.filter(r=>!!r.completeAt&&!r.returnAt&&norm(r.status)!=='returned'),delivered=jobs.filter(r=>!!r.returnAt||norm(r.status)==='returned'),durations=completed.map(r=>({r,mins:durationMinutes(r.createdAt,r.completeAt)})),validDur=durations.filter(x=>x.mins!==null&&x.mins>=0),invalidDur=durations.filter(x=>x.mins===null||x.mins<0),poTimes=po.filter(r=>r.poAt&&r.createdAt).map(r=>({r,mins:durationMinutes(r.createdAt,r.poAt)})),validPoTimes=poTimes.filter(x=>x.mins!==null&&x.mins>=0),missingPoDate=po.filter(r=>!r.poAt),noPoOpen=open.filter(r=>!r.hasPO),noPoOver=noPoOpen.filter(r=>r.createdAt&&r.createdAt<=asof&&asof-r.createdAt>=24*3600000),poWithin=validPoTimes.filter(x=>x.mins<=120),poLate=validPoTimes.filter(x=>x.mins>120);
+ const eligibleRef=['carry in','express','online'];const shortageYes=r=>['yes','true','1'].includes(norm(r.shortage));const shortageNo=r=>['no','false','0'].includes(norm(r.shortage));
+ const quickPool=jobs.filter(r=>['carry in','online'].includes(norm(r.reference))&&modelClass(r)==='SP'&&norm(r.service)==='normal'&&shortageNo(r));const quickDecided=quickPool.map(r=>({r,mins:durationMinutes(r.createdAt,r.completeAt),age:durationMinutes(r.createdAt,asof)})).filter(x=>(x.mins!==null&&x.mins>=0)||(!x.r.completeAt&&isOpen(x.r)&&x.age!==null&&x.age>=60));const quickOk=quickDecided.filter(x=>x.mins!==null&&x.mins<=60);
+ const poEligible=jobs.filter(r=>eligibleRef.includes(norm(r.reference))&&modelClass(r)==='SP'&&shortageYes(r));const poDecided=poEligible.map(r=>({r,mins:r.poAt&&r.createdAt?durationMinutes(r.createdAt,r.poAt):null,age:durationMinutes(r.createdAt,asof)})).filter(x=>(x.mins!==null&&x.mins>=0)||(!x.r.hasPO&&isOpen(x.r)&&x.age!==null&&x.age>=120));const poOnTime=poDecided.filter(x=>x.mins!==null&&x.mins<=120);
+ const poCompleted=po.filter(r=>r.completeAt&&r.createdAt).map(r=>({r,mins:durationMinutes(r.createdAt,r.completeAt)})).filter(x=>x.mins!==null&&x.mins>=0);const po3day=poCompleted.filter(x=>x.mins<=72*60);
+ const rwr=jobs.filter(r=>norm(r.service)==='rwr'),rwrOut=rwr.filter(r=>norm(r.warranty)==='out warranty');
+ const revenue=sum(out,r=>r.amount);
+ const activation={};for(const t of ['dap','doa','swap']){const g=jobs.filter(r=>norm(r.service)===t),withDates=g.filter(r=>r.activationAt&&r.createdAt),eligible=withDates.filter(r=>{const days=(r.createdAt-r.activationAt)/86400000;return days>=0&&days<=7});activation[t]={total:g.length,withDates:withDates.length,eligible:eligible.length,missing:g.length-withDates.length}}
+ const dailyMap=new Map();function bucket(key){if(!dailyMap.has(key))dailyMap.set(key,{date:key,newJobs:0,repaired:0,returned:0,revenue:0,po:0,under:0,out:0}) ;return dailyMap.get(key)}
+ for(const r of jobs){if(r.createdAt){const x=bucket(dayKey(r.createdAt));x.newJobs++;if(norm(r.warranty)==='under warranty')x.under++;if(norm(r.warranty)==='out warranty'){x.out++;x.revenue+=r.amount}if(r.hasPO)x.po++}if(r.completeAt)bucket(dayKey(r.completeAt)).repaired++;if(r.returnAt)bucket(dayKey(r.returnAt)).returned++}
+ const daily=[...dailyMap.values()].sort((a,b)=>a.date.localeCompare(b.date));
+ const groupPeriod=(keyFn)=>{const m=new Map();for(const r of jobs){if(!r.createdAt)continue;const k=keyFn(r.createdAt);if(!m.has(k))m.set(k,{period:k,jobs:0,under:0,out:0,po:0,revenue:0,repaired:0,returned:0});const x=m.get(k);x.jobs++;if(norm(r.warranty)==='under warranty')x.under++;if(norm(r.warranty)==='out warranty'){x.out++;x.revenue+=r.amount}if(r.hasPO)x.po++}for(const r of jobs){if(r.completeAt){const k=keyFn(r.completeAt);if(!m.has(k))m.set(k,{period:k,jobs:0,under:0,out:0,po:0,revenue:0,repaired:0,returned:0});m.get(k).repaired++}if(r.returnAt){const k=keyFn(r.returnAt);if(!m.has(k))m.set(k,{period:k,jobs:0,under:0,out:0,po:0,revenue:0,repaired:0,returned:0});m.get(k).returned++}}return [...m.values()].sort((a,b)=>a.period.localeCompare(b.period))};
+ const weekly=groupPeriod(weekStart),monthly=groupPeriod(monthKey);
+ const models=new Map(),parts=new Map(),poMaterials=new Map();for(const r of jobs){if(r.model)models.set(r.model,(models.get(r.model)||0)+1);for(const p of r.consumed){const key=p.code||p.desc||'Unknown part',x=parts.get(key)||{code:p.code,desc:p.desc||p.code,qty:0,jobs:0};x.qty+=p.qty||0;x.jobs++;parts.set(key,x)}for(const p of r.materialPO){const key=p.code||p.desc||'Unknown material',x=poMaterials.get(key)||{code:p.code,desc:p.desc||p.code,jobs:0,qty:0};x.jobs++;x.qty+=p.qty||0;poMaterials.set(key,x)}}
+ const topModels=[...models].map(([name,count])=>({name,count})).sort((a,b)=>b.count-a.count).slice(0,7),topParts=[...parts.values()].sort((a,b)=>b.qty-a.qty||b.jobs-a.jobs).slice(0,7),topPoMaterials=[...poMaterials.values()].sort((a,b)=>b.jobs-a.jobs).slice(0,7);
+ const serviceCounts={};for(const r of jobs){const k=r.service||'Blank';serviceCounts[k]=(serviceCounts[k]||0)+1}
+ const sources={};for(const r of jobs){const k=r.reference||'Blank';sources[k]=(sources[k]||0)+1}
+ const poByService={};for(const r of po){const k=r.service||'Blank';poByService[k]=(poByService[k]||0)+1}
+ const aging={'Under 1 hour':0,'1–2 hours':0,'2–24 hours':0,'24–72 hours':0,'Over 3 days':0,'Unknown age':0};for(const r of open){const age=durationMinutes(r.createdAt,asof);if(age===null||age<0)aging['Unknown age']++;else if(age<60)aging['Under 1 hour']++;else if(age<120)aging['1–2 hours']++;else if(age<1440)aging['2–24 hours']++;else if(age<4320)aging['24–72 hours']++;else aging['Over 3 days']++}
+ const bounce=bounceAnalysis(jobs);
+ const classified=jobs.filter(r=>modelClass(r)!=='Unknown').length,stockKnown=jobs.filter(r=>r.shortage==='yes'||r.shortage==='no').length;
+ const poStockFlags=[];if(inventoryMap){for(const r of po){for(const p of r.materialPO){if(p.code&&inventoryMap.has(p.code)){const inv=inventoryMap.get(p.code);if(inv.qty>0)poStockFlags.push({job:r.job,model:r.model,code:p.code,desc:p.desc||inv.desc,stock:inv.qty,shop:r.shopCode})}}}}
+ return{jobs,asof,completed,under,out,po,open,rfd,delivered,validDur,invalidDur,poTimes,validPoTimes,missingPoDate,poWithin,poLate,quickPool,quickDecided,quickOk,poEligible,poDecided,poOnTime,poCompleted,po3day,noPoOver,rwr,rwrOut,revenue,activation,daily,weekly,monthly,topModels,topParts,topPoMaterials,serviceCounts,sources,poByService,aging,bounce,classified,stockKnown,poStockFlags,inventoryReady:!!inventoryMap,duplicates:rawJobs.length-uniqueLatest().length,rawCount:rawJobs.length,uniqueCount:uniqueLatest().length,modelCoverage:pct(classified,jobs.length),jobsNoCreated:jobs.filter(r=>!r.createdAt).length,missingWarranty:jobs.filter(r=>!['under warranty','out warranty'].includes(norm(r.warranty))).length};
 }
-function validHeader(row){return TBISImporter.validHeader(row)}
-function recordsFromRows(rows,headerIndex,fileName){
- const header=rows[headerIndex].map(v=>TBISImporter.clean(v));const map=headerMap(header);const out=[];
- for(let i=headerIndex+1;i<rows.length;i++){const r=rows[i]||[];const obj=normalizeRow(r,map,fileName);if(obj.job)out.push(obj)}
- if(!out.length)throw new Error("The CRM header was found, but no rows with a JS No value followed it.");
- return {records:out,columns:header.length,header};
+function bounceAnalysis(jobs){const seen=new Map(),result={total:0,same:0,different:0,unknown:0};const sorted=jobs.filter(r=>r.createdAt&&r.deviceKeys.length).slice().sort((a,b)=>a.createdAt-b.createdAt);for(const r of sorted){let prior=null;for(const key of r.deviceKeys){const old=seen.get(key);if(old&&r.createdAt>old.date&&r.createdAt-old.date<=30*86400000){prior=old;break}}if(prior){result.total++;if(r.faultKey&&prior.fault&&r.faultKey===prior.fault)result.same++;else if(r.faultKey&&prior.fault)result.different++;else result.unknown++}for(const key of r.deviceKeys)seen.set(key,{date:r.createdAt,fault:r.faultKey})}return result}
+function kpi(label,value,hint,kind,badge){return'<article class="card kpi '+(kind||'')+'"><div class="klabel">'+label+'</div><div class="kvalue">'+value+'</div><div class="khint">'+hint+'</div>'+(badge?'<span class="kbadge '+(kind||'')+'">'+badge+'</span>':'')+'</article>'}
+function barChart(items){if(!items.length)return'<div class="empty">No records for this selection.</div>';const max=Math.max(1,...items.map(x=>x.value));return'<div class="bars">'+items.map(x=>'<div class="barrow"><div class="barname" title="'+safe(x.label)+'">'+safe(x.label)+'</div><div class="bartrack"><div class="barfill" style="width:'+Math.max(2,x.value/max*100)+'%;background:'+(x.color||'#5278ed')+'"></div></div><div class="barcount">'+currencyFormat(x.value)+'</div></div>').join('')+'</div>'}
+function table(headers,rows){if(!rows.length)return'<div class="empty">No matching records.</div>';return'<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td>'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table>'}
+function jobRow(r,asof){const elapsed=r.completeAt?humanDuration(durationMinutes(r.createdAt,r.completeAt)):humanDuration(durationMinutes(r.createdAt,asof));const tags=[];if(r.completeAt&&r.returnAt===null)tags.push('<span class="pill warn">Ready for delivery</span>');if(isOpen(r)&&!r.hasPO&&durationMinutes(r.createdAt,asof)>=1440)tags.push('<span class="pill bad">NOPO ≥24h</span>');if(r.poDateMissing)tags.push('<span class="pill warn">PO date missing</span>');if(r.completeAt&&durationMinutes(r.createdAt,r.completeAt)<0)tags.push('<span class="pill bad">Invalid dates</span>');return['<span class="jobid">'+safe(r.job)+'</span>',safe(r.model),safe(r.shopCode),safe(r.service),safe(r.status),safe(dateText(r.createdAt)),safe(elapsed),r.hasPO?'<span class="pill good">PO found</span>':'<span class="pill neutral">No PO</span>',tags.join(' ')||'<span class="pill neutral">Review</span>']}
+function renderAll(){if(!rawJobs.length){$('emptyState').classList.remove('hidden');$('exportBtn').disabled=true;$('exportBtn2').disabled=true;return}$('emptyState').classList.add('hidden');const a=makeAnalysis();lastAnalysis=a;const jobCount=a.jobs.length,underPct=pct(a.under.length,jobCount),outPct=pct(a.out.length,jobCount),warrantyOk=a.under.length+a.out.length===jobCount;const quickPct=pct(a.quickOk.length,a.quickDecided.length),poPct=pct(a.poOnTime.length,a.poDecided.length),tat3Pct=pct(a.po3day.length,a.poCompleted.length);const allPO=a.po.length,poRate=pct(allPO,jobCount);const noPoPct=pct(a.noPoOver.length,a.open.length);const periodLabel=$('period').value==='all'?'All uploaded dates':$('period').value==='custom'?$('fromDate').value+' to '+$('toDate').value:$('period').selectedOptions[0].text;$('periodInfo').textContent=jobCount.toLocaleString()+' unique jobs · '+periodLabel;
+ $('overviewKpis').innerHTML=[kpi('TOTAL JOBS',jobCount.toLocaleString(),'Imported job rows: '+a.rawCount.toLocaleString()+' · '+a.duplicates+' duplicate rows','', 'Unique JS No'),kpi('UNDER WARRANTY',a.under.length.toLocaleString(),fmtPct(underPct)+' · target 60%',underPct!==null&&underPct>=60?'good':'warn','Target 60%'),kpi('OUT OF WARRANTY',a.out.length.toLocaleString(),fmtPct(outPct)+' · target 40%',outPct!==null&&outPct>=40?'good':'warn','Target 40%'),kpi('OOW CASH RECEIVED',money(a.revenue),'Target PKR 1,000,000 · '+fmtPct(pct(a.revenue,1000000))+' achieved',a.revenue>=1000000?'good':'warn','Monthly target')].join('');
+ const lastDays=a.daily.slice(-14),maxDaily=Math.max(1,...lastDays.map(x=>x.newJobs));$('dailyChart').innerHTML=lastDays.length?lastDays.map(x=>'<div class="barrow"><div class="barname">'+x.date.slice(5)+'</div><div class="bartrack" style="display:flex"><div style="height:100%;width:'+x.newJobs/maxDaily*100+'%;background:#5278ed"></div><div style="height:100%;width:'+x.repaired/maxDaily*100+'%;background:#27a273"></div><div style="height:100%;width:'+x.returned/maxDaily*100+'%;background:#e2a142"></div></div><div class="barcount">'+x.newJobs+'</div></div>').join(''):'<div class="empty">No dated job records.</div>';
+ $('sourceChart').innerHTML=barChart(Object.entries(a.sources).map(([label,value])=>({label,value})).sort((x,y)=>y.value-x.value));
+ $('warrantyChart').innerHTML='<div class="metricline"><span>Under warranty</span><b>'+a.under.length+' · '+fmtPct(underPct)+'</b></div><div class="progress"><span style="width:'+(underPct||0)+'%"></span></div><div class="metricline"><span>Out of warranty</span><b>'+a.out.length+' · '+fmtPct(outPct)+'</b></div><div class="progress"><span style="width:'+(outPct||0)+'%;background:#e2a142"></span></div><div class="note">'+(warrantyOk?'Warranty split reconciles to the total job count.':'<strong>Data integrity warning:</strong> warranty categories do not add up to total jobs. Unclassified warranty rows: '+a.missingWarranty+'.')+'</div>';
+ $('serviceChart').innerHTML=barChart(Object.entries(a.serviceCounts).map(([label,value])=>({label,value})).sort((x,y)=>y.value-x.value));
+ const attention=a.jobs.filter(r=>isOpen(r)||(r.completeAt&&!r.returnAt)||r.poDateMissing||(r.completeAt&&durationMinutes(r.createdAt,r.completeAt)<0));$('attentionCount').textContent=attention.length+' items';$('attentionTable').innerHTML=table(['JS NO','MODEL','SHOP','SERVICE','STATUS','CREATED','TAT / AGE','PO/AP','ACTION'],attention.slice(0,100).map(r=>jobRow(r,a.asof)));
+ $('tatKpis').innerHTML=[kpi('1-HOUR KPI',fmtPct(quickPct),a.quickOk.length+' within target / '+a.quickDecided.length+' decided · target 97.5%',quickPct!==null&&quickPct>=97.5?'good':'warn','SP + Carry In/Online + no-shortage'),kpi('2-HOUR PO KPI',fmtPct(poPct),a.poOnTime.length+' within 2h / '+a.poDecided.length+' decided · target 97%',poPct!==null&&poPct>=97?'good':'warn','SP + shortage flag'),kpi('PO RATE',fmtPct(poRate),allPO+' jobs with PO/AP out of '+jobCount+' total','warn','All device classes'),kpi('3-DAY PO TAT',fmtPct(tat3Pct),a.po3day.length+' completed within 72h / '+a.poCompleted.length+' PO repairs',tat3Pct!==null&&tat3Pct>=97?'good':'warn','Working definition: from job creation'),kpi('NOPO BREACHES',a.noPoOver.length.toLocaleString(),'Open jobs with no PO and age ≥24 hours · target 0',a.noPoOver.length?'bad':'good','NOPO target 100%'),kpi('OPEN JOBS',a.open.length.toLocaleString(),'Not completed and not in a terminal status','', 'As of '+dateText(a.asof)),kpi('READY FOR DELIVERY',a.rfd.length.toLocaleString(),'Repair complete but Return On not populated',a.rfd.length?'warn':'good','Preferred collection ≤2 days'),kpi('PO/AP TIMESTAMPS MISSING',a.missingPoDate.length.toLocaleString(),'PO/AP code/date exists but no usable PO/AP date','warn','Data-quality follow-up')].join('');
+ $('poTiming').innerHTML='<div class="metricline"><span>PO/AP rows with valid date</span><b>'+a.validPoTimes.length+'</b></div><div class="metricline"><span>Created within 2 hours</span><b>'+a.poWithin.length+'</b></div><div class="metricline"><span>Created after 2 hours</span><b>'+a.poLate.length+'</b></div><div class="metricline"><span>Missing PO/AP date</span><b>'+a.missingPoDate.length+'</b></div><div class="progress"><span style="width:'+(poPct||0)+'%;background:'+(poPct>=97?'#27a273':'#e2a142')+'"></span></div><div class="smallmuted" style="margin-top:7px">KPI percentage is calculated only for classified eligible smartphone jobs with a decided PO outcome.</div>';
+ const dist={'≤1 hour':0,'1–2 hours':0,'2–3 days':0,'Over 3 days':0,'Invalid / unknown':a.invalidDur.length};for(const x of a.validDur){if(x.mins<=60)dist['≤1 hour']++;else if(x.mins<=120)dist['1–2 hours']++;else if(x.mins<=4320)dist['2–3 days']++;else dist['Over 3 days']++}$('tatDistribution').innerHTML=barChart(Object.entries(dist).map(([label,value])=>({label,value})));
+ $('poBreakdown').innerHTML=barChart(['Normal','SWAP','DAP','DOA'].map(k=>({label:'PO '+k,value:a.poByService[k]||0})));
+ $('openAging').innerHTML=barChart(Object.entries(a.aging).map(([label,value])=>({label,value})));
+ const ex=a.jobs.filter(r=>r.poDateMissing||(r.completeAt&&durationMinutes(r.createdAt,r.completeAt)<0)||isOpen(r)||r.completeAt&&!r.returnAt||isOpen(r)&&!r.hasPO&&durationMinutes(r.createdAt,a.asof)>=1440);$('tatExceptions').innerHTML=table(['JS NO','MODEL','SHOP','SERVICE','STATUS','CREATED','AGE / TAT','PO/AP','ACTION'],ex.slice(0,250).map(r=>jobRow(r,a.asof)));
+ const rwrPct=pct(a.rwrOut.length,a.out.length),bouncePct=pct(a.bounce.total,jobCount),rfdAging=a.rfd.filter(r=>r.completeAt).map(r=>durationMinutes(r.completeAt,a.asof)).filter(x=>x!==null&&x>=0),rfdOver2=rfdAging.filter(x=>x>=48*60).length;
+ $('revenueKpis').innerHTML=[kpi('OUT-WARRANTY CASH',money(a.revenue),'Received amount · PKR 1m monthly target',a.revenue>=1000000?'good':'warn','Collected revenue'),kpi('RWR JOBS',a.rwr.length.toLocaleString(),a.rwrOut.length+' out-warranty RWR / '+a.out.length+' out-warranty jobs','warn','RWR/OOW '+fmtPct(rwrPct)),kpi('BOUNCE (30 DAYS)',a.bounce.total.toLocaleString(),fmtPct(bouncePct)+' of jobs · target ≤0.92%',bouncePct!==null&&bouncePct<=.92?'good':'warn','Imported history only'),kpi('RFD OVER 2 DAYS',rfdOver2.toLocaleString(),a.rfd.length+' ready-for-delivery jobs','warn','Collection follow-up')].join('');
+ $('revenueProgress').innerHTML='<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:24px;color:#1c2c48">'+money(a.revenue)+'</b><span class="tag">'+fmtPct(pct(a.revenue,1000000))+' of target</span></div><div class="progress" style="height:12px;margin:13px 0 7px"><span style="width:'+Math.min(100,pct(a.revenue,1000000)||0)+'%;background:'+(a.revenue>=1000000?'#27a273':'#5278ed')+'"></span></div><div class="smallmuted">Remaining to monthly target: '+money(Math.max(0,1000000-a.revenue))+'</div>';
+ $('activationBreakdown').innerHTML=barChart(['DAP','DOA','SWAP'].map(k=>({label:k+' eligible ≤7d',value:a.activation[k.toLowerCase()].eligible})).concat(['DAP','DOA','SWAP'].map(k=>({label:k+' activation unknown',value:a.activation[k.toLowerCase()].missing,color:'#d99a42'}))));
+ $('qualityCards').innerHTML=[kpi('CUSTOMER SATISFACTION','Not available','No call-center rating/feedback field in this CRM export','warn','Requires feedback report'),kpi('RWR / OUT WARRANTY',fmtPct(rwrPct),a.rwrOut.length+' RWR out-warranty jobs / '+a.out.length+' out-warranty jobs','', 'No target supplied'),kpi('RETURNED TO CUSTOMER',a.delivered.length.toLocaleString(),'Return On date or Returned status','good','Customer handover proxy')].join('');
+ $('bouncePanel').innerHTML='<div class="integrity"><div class="integrityitem"><b>'+a.bounce.total+'</b><span>Repeat-device returns within 30 days</span></div><div class="integrityitem"><b>'+a.bounce.same+'</b><span>Same fault identified</span></div><div class="integrityitem"><b>'+a.bounce.different+'</b><span>Different fault identified</span></div><div class="integrityitem"><b>'+a.bounce.unknown+'</b><span>Fault comparison unavailable</span></div></div><div class="smallmuted" style="margin-top:8px">Bounce % = repeat-device jobs ÷ selected-period unique jobs. Repeat-device matches use internal device keys that are never shown.</div>';
+ $('partsKpis').innerHTML=[kpi('MODELS IN REPORT',new Set(a.jobs.map(r=>r.model).filter(Boolean)).size.toLocaleString(),'Distinct model labels in selected period','',''),kpi('CONSUMED PART LINES',a.jobs.reduce((s,r)=>s+r.consumed.length,0).toLocaleString(),'Material lines from Consume Material columns','',''),kpi('PO JOBS',a.po.length.toLocaleString(),'Jobs containing a PO/AP code or date','',''),kpi('MODEL CLASSIFICATION',fmtPct(a.modelCoverage),'Smartphone/Feature Phone model mapping coverage',a.modelCoverage>=95?'good':'warn','Needed for official 1h/2h KPI')].join('');
+ $('topModels').innerHTML=barChart(a.topModels.map(x=>({label:x.name,value:x.count})));
+ $('topParts').innerHTML=barChart(a.topParts.map(x=>({label:x.desc,value:x.qty||x.jobs})));
+ $('poMaterials').innerHTML=barChart(a.topPoMaterials.map(x=>({label:x.desc,value:x.jobs})));
+ renderInventory(a);
+ renderReports(a);
+ renderDataHealth(a);
+ $('exportBtn').disabled=false;$('exportBtn2').disabled=false;
 }
-async function parseFile(file){
- const buffer=await file.arrayBuffer(),bytes=new Uint8Array(buffer);
- const kind=TBISImporter.detectFileKind(bytes,file.name);
- if(kind==="xlsx"||kind==="xls"){
-  if(!window.XLSX)throw new Error("This file is an Excel workbook, but the Excel reader could not load. Connect to the internet and reopen TBIS.");
-  const book=XLSX.read(buffer,{type:"array",cellDates:false,cellNF:false,cellText:true});
-  const all=[];let cols=0,foundSheet="";
-  for(const sheetName of book.SheetNames){
-   const rows=XLSX.utils.sheet_to_json(book.Sheets[sheetName],{header:1,defval:"",raw:false,blankrows:false});
-   const idx=rows.findIndex(validHeader);
-   if(idx>=0){const extracted=recordsFromRows(rows,idx,file.name);all.push(...extracted.records);cols=Math.max(cols,extracted.columns);foundSheet=sheetName}
-  }
-  if(!all.length)throw new Error("Excel workbook opened, but no worksheet contained the CRM header (JS No, Created On and supporting CRM columns).");
-  return {records:all,kind,columns:cols,sheet:foundSheet,bytes:bytes.length,headerFound:true};
- }
- const parsed=TBISImporter.parseBytes(bytes);
- const extracted=recordsFromRows(parsed.rows,parsed.headerIndex,file.name);
- return {records:extracted.records,kind:"text",encoding:parsed.encoding,delimiter:parsed.delimiter,columns:parsed.columns,bytes:bytes.length,headerFound:true};
-}
-function statusIsDone(r){
- const s=compact(r.status);
- return !!r.completedAt||s==="returned"||s==="closed"||s==="repaircompleted"||s==="nonrepairable"||(s==="swapcertification"&&!!r.returnAt);
-}
-function compute(){
- const from=$("from").value?new Date($("from").value+"T00:00:00"):null;
- const to=$("to").value?new Date($("to").value+"T23:59:59"):null;
- const asof=parseDate($("asof").value);
- const activityRecords=records.filter(r=>!$("shopFilter").value||r.shop===$("shopFilter").value);
- const selected=activityRecords.filter(r=>r.createdAt&&(!from||r.createdAt>=from)&&(!to||r.createdAt<=to));
- const all=selected.map(r=>{
-  const done=statusIsDone(r);
-  const duration=r.createdAt&&r.completedAt?(r.completedAt-r.createdAt)/60000:null;
-  const invalidOrder=duration!==null&&duration<0;
-  const validDuration=duration!==null&&!invalidOrder;
-  const age=r.createdAt&&asof&&r.createdAt<=asof?(asof-r.createdAt)/60000:null;
-  const poAge=r.poDate&&asof&&r.poDate<=asof?(asof-r.poDate)/60000:null;
-  const rfd=compact(r.status)==="repaircompleted"&&!r.returnAt;
-  const rfdAge=rfd&&r.completedAt&&asof?(asof-r.completedAt)/86400000:null;
-  const oneScope=r.category==="SP"&&["carry in","online","online reservation"].includes(r.source.toLowerCase());
-  const oneEligible=oneScope&&!r.shortage;
-  const twoScope=r.category==="SP"&&r.shortage;
-  const poMinutes=r.createdAt&&r.poDate?(r.poDate-r.createdAt)/60000:null;
-  const poValid=poMinutes!==null&&poMinutes>=0;
-  const threeMinutes=r.poDate&&r.completedAt?(r.completedAt-r.poDate)/60000:null;
-  const threeValid=threeMinutes!==null&&threeMinutes>=0;
-  return {...r,done,duration:validDuration?duration:null,invalidOrder,age,poAge,rfd,rfdAge,oneScope,oneEligible,twoScope,
-   poMinutes:poValid?poMinutes:null,poValid,threeMinutes:threeValid?threeMinutes:null,threeValid,
-   repairOver:!done&&oneEligible&&age!==null&&age>=60,
-   nopoOver:!done&&!r.hasPO&&age!==null&&age>=1440,
-   oneMeasured:oneEligible&&validDuration,onePass:oneEligible&&validDuration&&duration<=60,
-   twoMeasured:twoScope&&(poValid||(!r.hasPO&&(done||(age!==null&&age>=120)))),twoPass:twoScope&&poValid&&poMinutes<=120&&((done)||(age!==null&&age>=120)),
-   threeMeasured:twoScope&&threeValid,threePass:twoScope&&threeValid&&threeMinutes<=4320,
-   threeOpenOver:twoScope&&!done&&r.hasPO&&poAge!==null&&poAge>=4320,
-   lateRepair:oneEligible&&validDuration&&duration>60,
-   latePO:twoScope&&((poValid&&poMinutes>120)||(!r.hasPO&&(done||(age!==null&&age>=120)))),
-   lateThree:twoScope&&threeValid&&threeMinutes>4320,
-   delivered:!!r.returnAt&&(compact(r.status)==="returned"||compact(r.status)==="swapcertification")
-  };
- });
- const total=all.length;
- const warranty=all.filter(r=>r.warranty.toLowerCase().includes("under warranty"));
- const outWarranty=all.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
- const po=all.filter(r=>r.hasPO);
- const oneScope=all.filter(r=>r.oneScope);
- const oneEligibleRows=all.filter(r=>r.oneEligible);
- const oneKnown=oneEligibleRows.filter(r=>r.oneMeasured);
- const onePass=oneEligibleRows.filter(r=>r.onePass);
- const oneExcludedShortage=oneScope.filter(r=>r.shortage).length;
- const twoScope=all.filter(r=>r.twoScope);
- const twoKnown=twoScope.filter(r=>r.twoMeasured);
- const twoPass=twoScope.filter(r=>r.twoPass);
- const twoNoPO=twoScope.filter(r=>!r.hasPO&&(r.done||(r.age!==null&&r.age>=120))).length;
- const twoDateUnknown=twoScope.filter(r=>r.hasPO&&!r.poValid).length;
- const threeKnown=all.filter(r=>r.threeMeasured);
- const threePass=all.filter(r=>r.threePass);
- const threeOpenOver=all.filter(r=>r.threeOpenOver);
- const threeDue=threeKnown.length+threeOpenOver.length;
- const open=all.filter(r=>!r.done);
- const noPO=open.filter(r=>r.nopoOver);
- const repairOver=open.filter(r=>r.repairOver);
- const rfd=all.filter(r=>r.rfd);
- const rfdOver=rfd.filter(r=>r.rfdAge!==null&&r.rfdAge>2);
- const rwr=all.filter(r=>compact(r.service)==="rwr");
- const owAmount=outWarranty.reduce((s,r)=>s+r.amount,0);
- const received=outWarranty.reduce((s,r)=>s+r.received,0);
- const bounceHistory=calcBounce(activityRecords);
- const bounceEvents=bounceHistory.events.filter(e=>e.createdAt&&(!from||e.createdAt>=from)&&(!to||e.createdAt<=to));
- const bounce={pairs:bounceEvents.length,same:bounceEvents.filter(e=>e.classification==="same").length,different:bounceEvents.filter(e=>e.classification==="different").length,unknown:bounceEvents.filter(e=>e.classification==="unknown").length,events:bounceEvents};
- const policyScope=all.filter(r=>["swap","dap","doa"].includes(compact(r.service)));
- const policy=policyScope.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0);
- const within7=policy.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);
- const invalidCreated=activityRecords.filter(r=>!r.createdAt).length;
- const invalidCompletion=selected.filter(r=>!r.completedAt).length;
- const targetMonths=from&&to?Math.max(1,(to.getFullYear()-from.getFullYear())*12+to.getMonth()-from.getMonth()+1):1;
- return {all,total,warranty,outWarranty,po,oneScope,oneEligibleRows,oneExcludedShortage,oneKnown,onePass,
-  twoScope,twoKnown,twoPass,twoNoPO,twoDateUnknown,threeKnown,threePass,threeOpenOver,threeDue,
-  open,noPO,repairOver,rfd,rfdOver,rwr,owAmount,received,bounce,policyScope,policy,within7,
-  unknownWarranty:total-warranty.length-outWarranty.length,invalidCreated,invalidCompletion,
-  targetMonths,periodJobTarget:num($("jobtarget").value)*targetMonths,
-  periodRevenueTarget:num($("revtarget").value)*targetMonths,activityRecords,asof,from,to};
-}
-function calcBounce(list){
- const groups=new Map();
- list.forEach(r=>{if(!r.deviceKey)return;if(!groups.has(r.deviceKey))groups.set(r.deviceKey,[]);groups.get(r.deviceKey).push(r)});
- let pairs=0,same=0,different=0,unknown=0;const events=[];
- groups.forEach(g=>{g.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));for(let i=1;i<g.length;i++){const prev=g[i-1],cur=g[i];if(prev.returnAt&&cur.createdAt){const days=(cur.createdAt-prev.returnAt)/86400000;if(days>=0&&days<=30){pairs++;const classification=prev.faultSig&&cur.faultSig?(prev.faultSig===cur.faultSig?"same":"different"):"unknown";if(classification==="same")same++;else if(classification==="different")different++;else unknown++;events.push({createdAt:cur.createdAt,classification})}}}});
- return {pairs,same,different,unknown,events};
-}
-function groupBy(list,keyFn){const map=new Map();list.forEach(r=>{const k=keyFn(r);if(!k)return;if(!map.has(k))map.set(k,[]);map.get(k).push(r)});return map}
-function kpi(title,value,sub,icon,state,tag){return '<article class="panel kpi '+(state||"")+'"><div class="kpitop"><span>'+esc(title)+'</span><span class="kpiicon">'+icon+'</span></div><div class="value">'+esc(value)+'</div><div class="sub">'+sub+(tag?'<br><span class="tag '+(state==="bad"?"bad":state==="warn"?"warn":"")+'">'+esc(tag)+'</span>':"")+'</div></article>'}
-function rankRows(items,type){
- if(!items.length)return '<div class="footnote">No matching records in this period.</div>';
- return items.map((x,i)=>'<div class="rankrow"><div class="ranknum">'+(i+1)+'</div><div class="rankname"><strong title="'+esc(x.name)+'">'+esc(x.name)+'</strong><small>'+esc(x.detail||"")+'</small></div><div class="rankvalue">'+esc(x.value)+'</div></div>').join("");
-}
-function dateRangeLabel(c){if(c.from&&c.to)return c.from.toLocaleDateString("en-GB")+" – "+c.to.toLocaleDateString("en-GB");return "All available dates"}
-function populateShops(){const map=new Map();records.forEach(r=>{if(r.shop)map.set(r.shop,r.shopName||r.shop)});const items=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));$("shopFilter").innerHTML='<option value="">All branches</option>'+items.map(([code,name])=>'<option value="'+esc(code)+'">'+esc(code+" · "+name)+"</option>").join("");if(items.length===1)$("shopFilter").value=items[0][0]}
-function dailyActivity(list,from,to){
- const inRange=d=>d&&(!from||d>=from)&&(!to||d<=to);
- const keys=new Set();list.forEach(r=>[r.createdAt,r.completedAt,r.returnAt,r.poDate].forEach(d=>{if(inRange(d))keys.add(localKey(d))}));
- const days=[...keys].sort();const same=(d,k)=>d&&localKey(d)===k;
- return days.map(k=>{const created=list.filter(r=>same(r.createdAt,k));const repaired=list.filter(r=>same(r.completedAt,k));const returned=list.filter(r=>same(r.returnAt,k)&&["returned","swapcertification"].includes(compact(r.status)));const newPO=list.filter(r=>same(r.poDate,k));const oldPORepair=repaired.filter(r=>r.poDate&&localKey(r.poDate)<k);const oldPOReturn=returned.filter(r=>r.poDate&&localKey(r.poDate)<k);return {date:k,newJobs:created.length,repaired:repaired.length,returned:returned.length,newPO:newPO.length,oldPORepair:oldPORepair.length,oldPOReturn:oldPOReturn.length}});
-}
-function dailySummaries(list){
- const map=new Map();
- list.forEach(r=>{if(!r.createdAt)return;const k=localKey(r.createdAt);if(!map.has(k))map.set(k,[]);map.get(k).push(r)});
- return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([date,jobs])=>({date,jobs:jobs.length}));
-}
-function dailyKpiRows(list,bounceEvents=[]){
- const keys=[...new Set(list.filter(r=>r.createdAt).map(r=>localKey(r.createdAt)))].sort();
- return keys.map(date=>{
-  const jobs=list.filter(r=>r.createdAt&&localKey(r.createdAt)===date);
-  const warr=jobs.filter(r=>r.warranty.toLowerCase().includes("under warranty")).length;
-  const out=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
-  const po=jobs.filter(r=>r.hasPO).length;
-  const one=jobs.filter(r=>r.oneMeasured),two=jobs.filter(r=>r.twoMeasured),three=jobs.filter(r=>r.threeMeasured),threeOpen=jobs.filter(r=>r.threeOpenOver).length;
-  const rwr=jobs.filter(r=>compact(r.service)==="rwr").length;
-  const timed=jobs.filter(r=>r.duration!==null);
-  const bounce=bounceEvents.filter(e=>localKey(e.createdAt)===date).length;
-  return {date,jobs:jobs.length,warranty:warr,outWarranty:out.length,warrantyPct:percent(warr,jobs.length),
-   revenue:out.reduce((s,r)=>s+r.amount,0),po,poPct:percent(po,jobs.length),
-   onePass:one.filter(r=>r.onePass).length,oneMeasured:one.length,onePct:percent(one.filter(r=>r.onePass).length,one.length),
-   twoPass:two.filter(r=>r.twoPass).length,twoMeasured:two.length,twoPct:percent(two.filter(r=>r.twoPass).length,two.length),
-   threePass:three.filter(r=>r.threePass).length,threeDue:three.length+threeOpen,
-   threePct:percent(three.filter(r=>r.threePass).length,three.length+threeOpen),rwr,bounce,
-   avgTat:timed.length?timed.reduce((s,r)=>s+r.duration,0)/timed.length:null};
- });
-}
-function topModels(list){
- const m=new Map();list.forEach(r=>{if(!r.model)return;const k=r.model;if(!m.has(k))m.set(k,{n:0,brand:r.brand});m.get(k).n++});
- return [...m.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,7).map(([name,v])=>({name,detail:(v.brand||"")+" · model",value:v.n+" jobs"}));
-}
-function topEngineers(list){
- const groups=new Map();list.forEach(r=>{if(!r.engineerKey)return;if(!groups.has(r.engineerKey))groups.set(r.engineerKey,[]);groups.get(r.engineerKey).push(r)});
- const sorted=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
- const labels=new Map(sorted.map((x,i)=>[x[0],"Engineer "+String(i+1).padStart(2,"0")]));
- return sorted.map(([key,jobs])=>{const timed=jobs.filter(r=>r.duration!==null);const within=timed.filter(r=>r.duration<=60).length;const avg=timed.length?Math.round(timed.reduce((s,r)=>s+r.duration,0)/timed.length):null;return {name:labels.get(key),detail:jobs.length+" jobs · "+(avg===null?"TAT unknown":"avg "+minsText(avg)),value:percent(within,timed.length)}}).sort((a,b)=>parseInt(b.detail)-parseInt(a.detail)).slice(0,7);
-}
-function topParts(list){
- const m=new Map();list.forEach(r=>r.consumed.forEach(p=>{if(!m.has(p.code))m.set(p.code,{desc:p.desc,qty:0,jobs:0});const x=m.get(p.code);x.qty+=p.qty;x.jobs++}));
- return [...m.entries()].sort((a,b)=>b[1].qty-a[1].qty).slice(0,7).map(([code,v])=>({name:code+" · "+v.desc,detail:v.jobs+" job uses",value:v.qty+" units"}));
-}
-function poTypeRows(list){
- const names={normal:"PO Repairs",swap:"PO SWAP",dap:"PO DAP",doa:"PO DOA",rwr:"PO RWR"};
- const c=new Map();list.filter(r=>r.hasPO).forEach(r=>{const k=compact(r.service);c.set(k,(c.get(k)||0)+1)});
- return [...c.entries()].sort((a,b)=>b[1]-a[1]).map(([k,n])=>({name:names[k]||"PO "+k.toUpperCase(),detail:"Service category",value:n+" jobs"}));
-}
-function weekRows(list,bounceEvents=[]){
- const groups=groupBy(list,r=>{if(!r.createdAt)return"";const d=new Date(r.createdAt.getFullYear(),r.createdAt.getMonth(),r.createdAt.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return localKey(d)});
- return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([wk,jobs])=>{
-  const ow=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
-  const one=jobs.filter(r=>r.oneMeasured),two=jobs.filter(r=>r.twoMeasured),three=jobs.filter(r=>r.threeMeasured),threeOpen=jobs.filter(r=>r.threeOpenOver).length,timed=jobs.filter(r=>r.duration!==null);
-  const po=jobs.filter(r=>r.hasPO).length;
-  const weekStart=new Date(wk+"T00:00:00"),weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+7);
-  const bounce=bounceEvents.filter(e=>e.createdAt>=weekStart&&e.createdAt<weekEnd).length;
-  const avgTat=timed.length?timed.reduce((s,r)=>s+r.duration,0)/timed.length:null;
-  return {week:wk,jobs:jobs.length,ow:ow.reduce((s,r)=>s+r.amount,0),poPct:percent(po,jobs.length),
-   onePct:percent(one.filter(r=>r.onePass).length,one.length),twoPct:percent(two.filter(r=>r.twoPass).length,two.length),
-   threePct:percent(three.filter(r=>r.threePass).length,three.length+threeOpen),bounce,avgTat};
- });
-}
-function monthRows(list,bounceEvents=[]){
- const groups=groupBy(list,r=>r.createdAt?r.createdAt.getFullYear()+"-"+String(r.createdAt.getMonth()+1).padStart(2,"0"):"");
- return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([mo,jobs])=>{
-  const w=jobs.filter(r=>r.warranty.toLowerCase().includes("under warranty")).length;
-  const o=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
-  const po=jobs.filter(r=>r.hasPO).length,rwr=jobs.filter(r=>compact(r.service)==="rwr").length;
-  const one=jobs.filter(r=>r.oneMeasured),two=jobs.filter(r=>r.twoMeasured),three=jobs.filter(r=>r.threeMeasured),threeOpen=jobs.filter(r=>r.threeOpenOver).length,timed=jobs.filter(r=>r.duration!==null);
-  const avgTat=timed.length?timed.reduce((s,r)=>s+r.duration,0)/timed.length:null;
-  const monthStart=new Date(mo+"-01T00:00:00"),monthEnd=new Date(monthStart);monthEnd.setMonth(monthEnd.getMonth()+1);
-  const bounce=bounceEvents.filter(e=>e.createdAt>=monthStart&&e.createdAt<monthEnd).length;
-  return {month:mo,jobs:jobs.length,warranty:w,ow:o.reduce((s,r)=>s+r.amount,0),poPct:percent(po,jobs.length),
-   warrantyPct:percent(w,jobs.length),rwr,onePct:percent(one.filter(r=>r.onePass).length,one.length),
-   twoPct:percent(two.filter(r=>r.twoPass).length,two.length),threePct:percent(three.filter(r=>r.threePass).length,three.length+threeOpen),
-   bounce,avgTat};
- });
-}
-function drawBars(daily){
- const cut=daily.slice(-18),max=Math.max(1,...cut.map(x=>x.jobs));
- $("dailyTotal").textContent=daily.reduce((s,x)=>s+x.jobs,0)+" jobs";
- $("dailyChart").innerHTML=cut.map(x=>'<div class="barcol"><div class="barvalue">'+x.jobs+'</div><div class="bar" style="height:'+Math.max(3,(x.jobs/max)*100)+'%"></div><div class="barlabel">'+x.date.slice(8)+'</div></div>').join("");
-}
-function render(){
- if(!records.length)return;
- const c=compute(),all=c.all;
- $("periodlabel").textContent=dateRangeLabel(c);
- $("kpis").innerHTML=[
-  kpi("Total jobs",c.total.toLocaleString(),"<b>Period target:</b> "+c.periodJobTarget.toLocaleString()+" ("+c.targetMonths+" month(s)) · "+percent(c.total,c.periodJobTarget)+" achieved","▤","",null),
-  kpi("Warranty mix",c.warranty.length+" / "+c.outWarranty.length,"Warranty "+percent(c.warranty.length,c.total)+" (target 60%) · Out warranty "+percent(c.outWarranty.length,c.total)+" (target 40%)","◉","",null),
-  kpi("Out-warranty amount",money(c.owAmount),"<b>Period target:</b> "+money(c.periodRevenueTarget)+" ("+c.targetMonths+" month(s)) · "+percent(c.owAmount,c.periodRevenueTarget)+" achieved","₨",c.owAmount>=c.periodRevenueTarget?"good":"warn","CRM Total Amt, not collections"),
-  kpi("1-hour TAT",percent(c.onePass.length,c.oneKnown.length),c.onePass.length+" within / "+c.oneKnown.length+" measured · "+(c.oneKnown.length-c.onePass.length)+" late · "+(c.oneEligibleRows.length-c.oneKnown.length)+" unknown · "+c.oneExcludedShortage+" shortage records excluded","◷",c.oneKnown.length&&c.onePass.length/c.oneKnown.length>=num($("t1").value)/100?"good":"bad","Is Shortage=No proxy · stock not verified"),
-  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" assessed · "+(c.twoKnown.length-c.twoPass.length)+" misses (late or no PO) · "+c.twoDateUnknown+" PO date unknown","↗",c.twoKnown.length&&c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP Is Shortage=Yes"),
-  kpi("Completed within 1H",c.onePass.length+" jobs",c.onePass.length+" on time · "+(c.oneKnown.length-c.onePass.length)+" over target · "+(c.oneEligibleRows.length-c.oneKnown.length)+" unknown","✓","good","Eligible measured jobs"),
-  kpi("Open jobs",c.open.length+" jobs",c.repairOver.length+" eligible 1H repair overdue · "+c.noPO.length+" NOPO ≥24h","◷",c.open.length?"warn":"good","As-of date applies"),
-  kpi("Open repair overdue",c.repairOver.length+" jobs","Open eligible SP Carry In / Online with Is Shortage=No for at least 1 hour","! ",c.repairOver.length?"bad":"good","Availability proxy only"),
-  kpi("PO rate",percent(c.po.length,c.total),c.po.length+" jobs with any PO/AP code or date","▣","","Minimize"),
-  kpi("NOPO ≥24 hours",c.noPO.length+" jobs",c.open.length+" open jobs · target is zero NOPO jobs","!",c.noPO.length?"bad":"good",c.noPO.length?"Action required":"Target achieved"),
-  kpi("3-day close after PO",percent(c.threePass.length,c.threeDue),c.threePass.length+" within / "+c.threeDue+" matured · "+(c.threeKnown.length-c.threePass.length+c.threeOpenOver.length)+" late / overdue","◴","","No percentage target set"),
-  kpi("RWR jobs",c.rwr.length+" jobs",percent(c.rwr.length,c.outWarranty.length)+" of out-warranty jobs · "+c.rwr.filter(r=>r.warranty.toLowerCase().includes("out warranty")).length+" are out warranty","↩","","No percentage target supplied"),
-  kpi("7-day SWAP / DAP / DOA",c.within7.length+" eligible",c.within7.length+" within 7 days / "+c.policy.length+" with valid activation dates · "+(c.policyScope.length-c.policy.length)+" missing / invalid","7","","Activation evidence"),
-  kpi("RFD older than 2 days",c.rfdOver.length+" jobs",c.rfd.length+" ready for delivery · "+c.rfdOver.length+" beyond preferred return time","▣",c.rfdOver.length?"bad":"good","Return follow-up"),
-  kpi("Bounce candidates",c.bounce.pairs+" jobs",percent(c.bounce.pairs,c.total)+" within uploaded history · target 0.92%","↻",c.bounce.pairs/c.total>.0092?"bad":"good","History may be incomplete"),
-  kpi("Customer satisfaction","Needs report","No customer survey / call-centre results in this CRM export","☆","na","Not calculable")
- ].join("");
- const daily=dailySummaries(all);drawBars(daily);
- const sourceCounts=new Map();all.forEach(r=>{const n=r.source||"Unknown";sourceCounts.set(n,(sourceCounts.get(n)||0)+1)});
- const totalSources=Math.max(1,all.length);
- $("sourceMix").innerHTML=[...sourceCounts.entries()].sort((a,b)=>b[1]-a[1]).map(([n,v])=>'<div class="mixrow"><span>'+esc(n)+'</span><div class="track"><div class="fill" style="width:'+(v/totalSources*100)+'%"></div></div><strong>'+v+'</strong></div>').join("");
- const sp=all.filter(r=>r.category==="SP").length,fp=all.filter(r=>r.category==="FP").length;
- $("categoryMix").textContent="Device categories · Smartphones "+sp+" · Feature Phones "+fp;
- $("models").innerHTML=rankRows(topModels(all));
- $("parts").innerHTML=rankRows(topParts(all));
- $("poBreakdown").innerHTML=rankRows(poTypeRows(all));
- const weeks=weekRows(all,c.bounce.events);
- $("weekly").innerHTML=weeks.length?weeks.map((w,i)=>{const prev=weeks[i-1];const delta=prev?w.jobs-prev.jobs:null;const pctDelta=(now,before)=>{const n=parseFloat(now),p=parseFloat(before);return Number.isFinite(n)&&Number.isFinite(p)?(n-p>0?"+":"")+(n-p).toFixed(1)+" pp":"—"};return "<tr><td>"+w.week+"</td><td>"+w.jobs+(delta===null?"":' <span style="color:'+(delta>=0?"#18815c":"#b33e4a")+'">'+(delta>=0?"+":"")+delta+"</span>")+"</td><td>"+money(w.ow)+"</td><td>"+w.poPct+"</td><td>"+w.onePct+(prev?' <small>('+pctDelta(w.onePct,prev.onePct)+')</small>':'')+"</td><td>"+w.twoPct+(prev?' <small>('+pctDelta(w.twoPct,prev.twoPct)+')</small>':'')+"</td><td>"+w.threePct+"</td><td>"+w.bounce+" ("+percent(w.bounce,w.jobs)+")</td><td>"+minsText(w.avgTat??NaN)+"</td><td>Not loaded</td></tr>"}).join(""):'<tr><td colspan="10">No weekly data</td></tr>';
- const months=monthRows(all,c.bounce.events);
- $("monthly").innerHTML=months.length?months.map(m=>"<tr><td>"+m.month+"</td><td>"+m.jobs+" / "+num($("jobtarget").value)+" ("+percent(m.jobs,num($("jobtarget").value))+")</td><td>"+m.warrantyPct+"</td><td>"+money(m.ow)+" / "+money(num($("revtarget").value))+" ("+percent(m.ow,num($("revtarget").value))+")</td><td>"+m.poPct+"</td><td>"+m.onePct+"</td><td>"+m.twoPct+"</td><td>"+m.threePct+"</td><td>"+m.rwr+"</td><td>"+m.bounce+" ("+percent(m.bounce,m.jobs)+")</td><td>"+minsText(m.avgTat??NaN)+"</td><td>Not loaded</td></tr>").join(""):'<tr><td colspan="12">No monthly data</td></tr>';
- const lastDate=daily.length?daily[daily.length-1].date:"";
- const policyByType={};c.policyScope.forEach(r=>{const t=r.service.toUpperCase();if(!policyByType[t])policyByType[t]={all:0,known:0,within:0};policyByType[t].all++;if(r.activationAt&&r.createdAt){const d=(r.createdAt-r.activationAt)/86400000;if(d>=0){policyByType[t].known++;if(d<=7)policyByType[t].within++}}});
- $("policyPulse").innerHTML=["SWAP","DAP","DOA"].map(t=>{const x=policyByType[t]||{all:0,known:0,within:0};return '<div class="qualityitem"><strong>'+x.within+' / '+x.known+'</strong><span>'+t+' · '+(x.all-x.known)+' missing activation date</span></div>'}).join("");
- $("engineers").innerHTML=rankRows(topEngineers(c.all));
- if(!$("dailyDate").value)$("dailyDate").value=lastDate;
- renderDailyPulse(c.activityRecords,$("dailyDate").value);
- renderExceptions(c);
- renderQuality(c);
- $("pack").disabled=fileMetas.length===0||records.length!==new Set(records.map(r=>r.job)).size;
-}
-function renderDailyPulse(list,date){
- const d=date?new Date(date+"T00:00:00"):null;
- const same=(x)=>x&&d&&x.getFullYear()===d.getFullYear()&&x.getMonth()===d.getMonth()&&x.getDate()===d.getDate();
- const created=list.filter(r=>same(r.createdAt)).length;
- const repaired=list.filter(r=>same(r.completedAt)).length;
- const returned=list.filter(r=>same(r.returnAt)&&["returned","swapcertification"].includes(compact(r.status))).length;
- const newPO=list.filter(r=>same(r.poDate)).length;
- const oldPORepair=list.filter(r=>same(r.completedAt)&&r.poDate&&r.poDate<d).length;
- const oldPODelivery=list.filter(r=>same(r.returnAt)&&r.poDate&&r.poDate<d).length;
- const items=[["Today's new jobs",created],["Repairs completed today",repaired],["Jobs returned today",returned],["New PO/AP today",newPO],["Old PO jobs repaired today",oldPORepair],["Old PO jobs returned today",oldPODelivery]];
- $("dailyPulse").innerHTML=items.map(x=>'<div class="qualityitem"><strong>'+x[1]+'</strong><span>'+x[0]+'</span></div>').join("");
-}
-function renderExceptions(c){
- let q=$("jssearch").value.trim().toLowerCase(),type=$("exceptionType").value;
- let list=c.all.filter(r=>{
-  if(q&&!r.job.toLowerCase().includes(q))return false;
-  if(type==="repair")return r.lateRepair||r.repairOver;
-  if(type==="po")return r.latePO;
-  if(type==="nopo")return r.nopoOver;
-  if(type==="three")return r.lateThree||r.threeOpenOver;
-  if(type==="rfd")return r.rfdAge!==null&&r.rfdAge>2;
-  if(type==="invalid")return !r.createdAt||(!r.completedAt&&r.done)||r.invalidOrder;
-  return r.lateRepair||r.repairOver||r.latePO||r.nopoOver||r.lateThree||r.threeOpenOver||(r.rfdAge!==null&&r.rfdAge>2)||r.invalidOrder;
- });
- const urgency=r=>r.age!==null&&r.age!==undefined?r.age:r.rfdAge!==null&&r.rfdAge!==undefined?r.rfdAge*1440:r.poAge??-1;
- list.sort((a,b)=>urgency(b)-urgency(a));
- currentExceptions=list;
- $("exceptions").innerHTML=list.map(r=>{
-  const age=r.rfdAge!==null&&r.rfd?Math.round(r.rfdAge*10)/10+"d RFD":r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown";
-  const actions=[];
-  if(r.invalidOrder)actions.push("Invalid date order");
-  if(r.lateRepair)actions.push("1H target missed");
-  if(r.repairOver)actions.push("Open >1H");
-  if(r.latePO)actions.push(r.hasPO?"PO created after 2H":"No PO/AP created by 2H");
-  if(r.nopoOver)actions.push("NOPO ≥24H");
-  if(r.lateThree)actions.push("PO-to-close >3 days");
-  if(r.threeOpenOver)actions.push("Open >3 days after PO");
-  if(r.rfdAge!==null&&r.rfdAge>2)actions.push("RFD follow-up");
-  if(!r.completedAt&&r.done)actions.push("TAT timestamp missing");
-  return "<tr><td class='job'>"+esc(r.job)+"</td><td>"+esc(r.shopName||r.shop||"—")+"</td><td>"+esc(r.source||"—")+"</td><td>"+esc(r.category||"—")+"</td><td>"+esc(r.model||"—")+"</td><td>"+esc(r.warranty||"—")+"</td><td>"+esc(dateText(r.createdAt))+"</td><td>"+esc(dateText(r.completedAt))+"</td><td>"+esc(age)+"</td><td><span class='tag "+(r.hasPO?"ok":"warn")+"'>"+(r.hasPO?"Found":"Not found")+"</span></td><td>"+esc(r.status||"—")+"</td><td>"+esc(actions.join(" · ")||"Review")+"</td></tr>";
- }).join("");
- $("noexceptions").classList.toggle("hide",list.length>0);
- $("exceptionCount").textContent=list.length+" jobs in this view";
-}
-function renderQuality(c){
- const duplicate=records.length-new Set(records.map(r=>r.job)).size;
- const blankCreated=c.invalidCreated,missingCompletion=c.invalidCompletion;
- const warrantyCheck=c.warranty.length+c.outWarranty.length+c.unknownWarranty===c.total;
- const items=[["Imported job rows",records.length],["Unique JS No",new Set(records.map(r=>r.job)).size],["Duplicate JS No",duplicate],["Missing / invalid completion dates",missingCompletion],
-  ["Warranty reconciliation",warrantyCheck?"PASS":"CHECK"],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")||"—"],["CRM columns detected",headersFound.length?Math.max(...headersFound):"—"],["Source files",fileMetas.length]];
- $("quality").innerHTML=items.map(x=>'<div class="qualityitem"><strong>'+esc(x[1])+'</strong><span>'+esc(x[0])+'</span></div>').join("");
- const issues=[];
- if(duplicate)issues.push("Duplicate JS No values are present. The dashboard keeps every row; remove overlapping exports before using combined totals.");
- if(!warrantyCheck)issues.push("Warranty + Out Warranty does not reconcile to the total. Some warranty classifications are missing.");
- if(missingCompletion)issues.push(missingCompletion+" jobs have a blank or invalid Repair Complete Date; these are not given an invented repair duration.");
- if(c.unknownWarranty)issues.push(c.unknownWarranty+" jobs have warranty classifications outside the two recognized groups.");
- if(c.invalidCreated)issues.push(c.invalidCreated+" rows have a missing or invalid Created On timestamp.");
- $("integrityBadge").textContent=issues.length?"Review required":"Checks passed";
- $("integrityBadge").className="tag "+(issues.length?"warn":"ok");
- $("qualityNotes").textContent=issues.length?issues.join(" "):"Unique job identifiers and warranty reconciliation passed for this imported selection. Missing completion timestamps remain visible as unknown, not estimated.";
-}
-function exportCsv(){
- const heads=["JS No","Branch","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Turnaround / Age","PO/AP found","Document Status","Action"];
- const rows=[heads,...currentExceptions.map(r=>[r.job,r.shopName||r.shop,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status,
-  [r.lateRepair?"1H target missed":"",r.repairOver?"Open >1H":"",r.latePO?(r.hasPO?"PO >2H":"No PO/AP by 2H"):"",r.nopoOver?"NOPO ≥24H":"",r.lateThree?"3-day close late":"",r.rfdAge>2?"RFD follow-up":""].filter(Boolean).join("; ")])];
- const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
- const a=document.createElement("a"),url=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.href=url;a.download="TBIS-safe-exceptions.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-function buildPack(){
- if(records.length!==new Set(records.map(r=>r.job)).size){show("warn","Management pack is paused because duplicate JS No values exist. Remove overlapping exports first; no records have been silently removed.");return}
- const c=compute(),wb=XLSX.utils.book_new();
- const add=(name,rows)=>{const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,name)};
- const summary=[
- ["TRANSsion Branch Intelligence System · Management Pack"],["Period",dateRangeLabel(c)],["As of",dateText(c.asof)],[],
- ["KPI","Actual","Target / rule","Evidence / note"],
- ["Total jobs",c.total,num($("jobtarget").value),"Count of non-empty JS No"],
- ["Warranty jobs",c.warranty.length, "60% mix target",percent(c.warranty.length,c.total)],
- ["Out warranty jobs",c.outWarranty.length,"40% mix target",percent(c.outWarranty.length,c.total)],
- ["Out-warranty CRM Total Amt",c.owAmount,money(num($("revtarget").value)),"PKR; not same as accumulated received amount"],
- ["Out-warranty accumulated received",c.received,"—","CRM Accumulated Received Amt"],
- ["1H TAT",percent(c.onePass.length,c.oneKnown.length),num($("t1").value)+"%","SP Carry In/Online where Is Shortage=No; "+c.oneExcludedShortage+" shortage jobs excluded; "+(c.oneEligibleRows.length-c.oneKnown.length)+" duration unknown; shortage flag is a proxy, not an inventory count"],
- ["2H PO",percent(c.twoPass.length,c.twoKnown.length),num($("t2").value)+"%","SP Is Shortage=Yes; "+(c.twoScope.length-c.twoKnown.length)+" unknown PO timings; "+c.twoNoPO+" mature jobs have no PO/AP; "+c.twoDateUnknown+" have PO/AP but no usable date"],
- ["PO jobs",c.po.length,"Minimize",percent(c.po.length,c.total)],
- ["NOPO ≥24h",c.noPO.length,"0 jobs","Open jobs with no PO/AP at 24h"],
- ["3-day close after PO",percent(c.threePass.length,c.threeDue),"Track · no % target supplied","PO-to-repair-complete; "+(c.threeKnown.length-c.threePass.length+c.threeOpenOver.length)+" late / overdue; "+c.threeOpenOver.length+" open past 3 days"],
- ["RWR jobs",c.rwr.length,"—",percent(c.rwr.length,c.outWarranty.length)+" of out-warranty jobs"],
- ["RFD >2 days",c.rfdOver.length,"Preferred ≤2 days","Ready for delivery follow-up"],
- ["Bounce candidates",c.bounce.pairs,"0.92% target","Within uploaded-history window only"],
- ["Customer satisfaction","Not available","97.50%","Call-centre / survey file required"],
- ["Data integrity","No duplicates","No duplicates permitted","Rows are never silently deduplicated"]
- ];
- add("Management Summary",summary);
- add("Daily Activity",[["Event date","New jobs","Repairs completed","Jobs returned","New PO/AP","Old PO jobs repaired","Old PO jobs returned"],...dailyActivity(c.activityRecords,c.from,c.to).map(x=>[x.date,x.newJobs,x.repaired,x.returned,x.newPO,x.oldPORepair,x.oldPOReturn])]);
- add("Daily KPI",[["Created date","Jobs","Warranty jobs","Warranty %","OW jobs","OW Total Amt (PKR)","PO jobs","PO rate","1H within","1H measured","1H rate","2H PO within","2H assessed","2H rate","3-day within","3-day due","3-day rate","RWR jobs","Bounce signals","Avg repair TAT minutes","Customer satisfaction"],...dailyKpiRows(c.all,c.bounce.events).map(x=>[x.date,x.jobs,x.warranty,x.warrantyPct,x.outWarranty,x.revenue,x.po,x.poPct,x.onePass,x.oneMeasured,x.onePct,x.twoPass,x.twoMeasured,x.twoPct,x.threePass,x.threeDue,x.threePct,x.rwr,x.bounce,x.avgTat,"Not loaded"])]);
- add("Weekly",[["Week starts","Jobs","Out Warranty Total Amt (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...weekRows(c.all,c.bounce.events).map(x=>[x.week,x.jobs,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
- add("Monthly",[["Month","Jobs","Monthly job target progress","Warranty %","Out-warranty amount (PKR)","Monthly revenue target progress","PO rate","1H rate","2H PO compliance","3-day TAT","RWR jobs","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...monthRows(c.all,c.bounce.events).map(x=>[x.month,x.jobs,percent(x.jobs,num($("jobtarget").value)),x.warrantyPct,x.ow,percent(x.ow,num($("revtarget").value)),x.poPct,x.onePct,x.twoPct,x.threePct,x.rwr,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
- add("Top Models",[["Rank","Model","Brand","Jobs"],...topModels(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
- add("Top Parts",[["Rank","Part code / description","Jobs / details","Quantity"],...topParts(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
- add("Engineer Summary",[["Engineer label","Workload / average TAT","Within-1-hour rate"],...topEngineers(c.all).map(x=>[x.name,x.detail,x.value])]);
- add("7-Day Policy",[["Service type","Jobs in category","Valid activation dates","Received within 7 days","Missing / invalid dates"],...["SWAP","DAP","DOA"].map(t=>{const g=c.policyScope.filter(r=>r.service.toUpperCase()===t),valid=g.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0),within=valid.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);return [t,g.length,valid.length,within.length,g.length-valid.length]})]);
- add("Inventory Readiness",[["Control","Status / count"],["Stock-on-hand reconciliation","Not implemented in this version; inventory import and material-code matching are still required"],["PO jobs",c.po.length],["Avoidable PO conclusion","Not calculated without a stock snapshot and matching material codes"]]);
- add("PO Breakdown",[["PO type","Jobs"],...poTypeRows(c.all).map(x=>[x.name,x.value])]);
- add("Data Quality",[["Check","Result"],["Imported rows",records.length],["Unique JS No",new Set(records.map(r=>r.job)).size],["Duplicate JS No",records.length-new Set(records.map(r=>r.job)).size],["Rows with invalid Created On (all uploaded files)",c.invalidCreated],["Rows with missing/invalid completion timestamp",c.invalidCompletion],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")],["Source files",fileMetas.map(f=>f.name).join(" | ")],["Important note","No customer names, contact numbers, device identifiers or technician names are included."]]);
- add("Exceptions",[["JS No","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Duration / age","PO/AP found","Status"],...currentExceptions.map(r=>[r.job,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status])]);
- XLSX.writeFile(wb,"TBIS-Management-Pack.xlsx");
-}
-function show(type,msg){$("err").style.display="none";$("warn").style.display="none";$("ok").style.display="none";$(type).textContent=msg;$(type).style.display="block"}
-async function loadFiles(list){
- if(isBusy||!list.length)return;
- isBusy=true;$("browse").disabled=true;$("pack").disabled=true;$("dash").classList.add("hide");$("err").style.display="none";$("warn").style.display="none";$("ok").style.display="none";
- try{
-  const all=[],metas=[];
-  for(const file of list){
-   const parsed=await parseFile(file);all.push(...parsed.records);
-   metas.push({name:file.name,bytes:parsed.bytes,kind:parsed.kind,encoding:parsed.encoding||"Excel",delimiter:parsed.delimiter||parsed.sheet||"Workbook",columns:parsed.columns});
-  }
-  if(!all.length)throw new Error("No jobs with a JS No were found in the selected reports.");
-  records=all;fileMetas=metas;headersFound=metas.map(x=>x.columns);populateShops();
-  const dates=records.map(r=>r.createdAt).filter(Boolean).sort((a,b)=>a-b);
-  if(!dates.length)throw new Error("Jobs were found, but no valid Created On timestamps were detected.");
-  $("from").value=dOnly(dates[0]);$("to").value=dOnly(dates[dates.length-1]);$("dailyDate").value=dOnly(dates[dates.length-1]);
-  const now=new Date(),local=new Date(now-now.getTimezoneOffset()*60000);$("asof").value=local.toISOString().slice(0,16);
-  const count=records.length,unique=new Set(records.map(r=>r.job)).size,duplicates=count-unique;
-  $("filemeta").textContent=metas.map(m=>m.name).join(" · ");
-  $("schemaMeta").textContent=count.toLocaleString()+" job rows · "+unique.toLocaleString()+" unique JS No · "+duplicates+" duplicate · "+metas.map(m=>m.kind.toUpperCase()+", "+m.columns+" columns").join(" | ");
-  $("dash").classList.remove("hide");render();
-  if(duplicates)show("warn","Import completed with "+duplicates+" duplicate JS No rows. All rows are preserved, but combined KPI totals may double-count overlapping exports. Remove overlapping reports before downloading the management pack.");
-  else show("ok","Successfully imported "+count.toLocaleString()+" job rows from "+metas.length+" report file(s). Unique JS No values are verified and no duplicates were found.");
- }catch(e){records=[];fileMetas=[];$("dash").classList.add("hide");show("err","Could not import the selected report: "+(e.message||"Unknown file error")+" Check that it is a supported CSV, TSV, TXT, XLS or XLSX CRM export.");$("filemeta").textContent="No report loaded."}
- finally{isBusy=false;$("browse").disabled=false;$("files").value=""}
-}
-function clearReports(){records=[];fileMetas=[];headersFound=[];currentExceptions=[];$("dash").classList.add("hide");$("filemeta").textContent="No report loaded yet. Your CRM file stays on this device.";$("schemaMeta").textContent="";$("err").style.display=$("warn").style.display=$("ok").style.display="none";$("pack").disabled=true}
-$("browse").onclick=()=>$("files").click();
-$("drop").onclick=e=>{if(e.target.id!=="browse")$("files").click()};
-$("drop").ondragover=e=>{e.preventDefault();$("drop").style.borderColor="#5375ec"};
-$("drop").ondragleave=()=>$("drop").style.borderColor="";
-$("drop").ondrop=e=>{e.preventDefault();$("drop").style.borderColor="";loadFiles([...e.dataTransfer.files])};
-$("files").onchange=e=>loadFiles([...e.target.files]);
-$("clear").onclick=clearReports;$("pack").onclick=buildPack;$("exportCsv").onclick=exportCsv;
-["from","to","shopFilter","asof","t1","t2","jobtarget","revtarget"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length)render()}));
-["dailyDate","exceptionType"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length){const c=compute();renderDailyPulse(c.activityRecords,$("dailyDate").value);renderExceptions(c)}}));
-$("jssearch").addEventListener("input",()=>{if(records.length)renderExceptions(compute())});
+function renderInventory(a){if(!inventoryMap){$('inventoryResult').innerHTML='<div class="empty">No inventory report uploaded. The dashboard can analyse PO demand now, but cannot verify branch stock availability yet.</div>';$('stockFlags').innerHTML='<div class="empty">Upload an inventory report to compare PO material codes with on-hand quantity.</div>';return}$('inventoryResult').innerHTML='<div class="metricline"><span>Inventory material codes mapped</span><b>'+inventoryMap.size+'</b></div><div class="metricline"><span>PO materials also found in inventory</span><b>'+a.poStockFlags.length+'</b></div><div class="smallmuted">File: '+safe(inventoryName)+'. Positive stock is a possible process flag, not proof the item was usable, reserved or physically available at repair time.</div>';$('stockFlags').innerHTML=table(['JS NO','MODEL','MATERIAL CODE','MATERIAL DESCRIPTION','CURRENT QTY','SHOP'],a.poStockFlags.slice(0,150).map(x=>['<span class="jobid">'+safe(x.job)+'</span>',safe(x.model),safe(x.code),safe(x.desc),safe(x.stock),safe(x.shop)]))}
+function renderReports(a){function mini(rows,headers,mapper){return table(headers,rows.slice(-14).reverse().map(mapper))}$('dailyTable').innerHTML=mini(a.daily,['DATE','NEW JOBS','REPAIRED','RETURNED','PO JOBS','OOW CASH'],x=>[safe(x.date),x.newJobs,x.repaired,x.returned,x.po,money(x.revenue)]);$('weeklyTable').innerHTML=table(['WEEK START','NEW JOBS','REPAIRED','RETURNED','PO JOBS','OOW CASH'],a.weekly.slice(-12).reverse().map(x=>[safe(x.period),x.jobs,x.repaired,x.returned,x.po,money(x.revenue)]));$('monthlyTable').innerHTML=table(['MONTH','NEW JOBS','REPAIRED','RETURNED','WARRANTY','OUT WARRANTY','PO JOBS','OOW CASH'],a.monthly.map(x=>[safe(x.period),x.jobs,x.repaired,x.returned,x.under,x.out,x.po,money(x.revenue)]))}
+function renderDataHealth(a){const good=a.missingWarranty===0&&a.jobsNoCreated===0;const checks=[['Imported rows',a.rawCount],['Unique JS No',a.uniqueCount],['Duplicate rows',a.duplicates],['Missing Created On',a.jobsNoCreated],['Unclassified warranty',a.missingWarranty],['Missing PO/AP date',a.missingPoDate.length],['Invalid / unknown repair duration',a.invalidDur.length],['Models classified',a.classified+' / '+a.jobs.length],['Jobs with shortage indicator',a.stockKnown+' / '+a.jobs.length]];$('dataKpis').innerHTML=[kpi('IMPORTED ROWS',a.rawCount.toLocaleString(),'Rows across all uploaded reports','',''),kpi('UNIQUE JOBS',a.uniqueCount.toLocaleString(),'One record per JS No in KPI calculations','',''),kpi('DUPLICATES',a.duplicates.toLocaleString(),'Reported separately; latest imported row used',a.duplicates?'warn':'good','No silent deduplication'),kpi('DATA INTEGRITY',good?'Core checks passed':'Review required','Warranty + OOW = total; created date coverage',good?'good':'warn','Validation')].join('');$('integrityGrid').innerHTML=checks.map(x=>'<div class="integrityitem"><b>'+safe(x[1])+'</b><span>'+safe(x[0])+'</span></div>').join('');const errors=[];if(a.under.length+a.out.length!==a.jobs.length)errors.push('Warranty plus out-of-warranty does not equal the selected job count. Resolve unknown warranty categories.');if(a.duplicates)errors.push('Duplicate JS No records exist. KPI calculations currently use the last imported row per JS No; the duplicate count remains visible.');if(a.missingPoDate.length)errors.push(a.missingPoDate.length+' PO jobs have no usable PO/AP date and are excluded from PO timing percentages.');if(a.invalidDur.length)errors.push(a.invalidDur.length+' completed jobs have missing or invalid repair duration timestamps.');$('integrityMsg').textContent=errors.length?errors.join('\\n'):'Core data checks pass for the selected period. KPI limitations and missing source reports are listed in the notes.';$('integrityStatus').textContent=errors.length?'Review '+errors.length+' item(s)':'Core checks passed';const models=[...new Set(a.jobs.map(r=>r.model).filter(Boolean))].sort((x,y)=>x.localeCompare(y));$('modelMap').innerHTML=models.map(m=>'<label class="mapitem"><span class="modelname" title="'+safe(m)+'">'+safe(m)+'</span><select data-model="'+safe(m).replace(/"/g,'&quot;')+'"><option value="Unknown">Not classified</option><option value="SP">Smartphone</option><option value="FP">Feature Phone</option></select></label>').join('')||'<div class="empty">No model values found.</div>';document.querySelectorAll('[data-model]').forEach(sel=>{const model=sel.getAttribute('data-model'),sample=a.jobs.find(r=>r.model===model);sel.value=modelOverrides[model]||(sample&&/^(mainstream model|high.end model|flagship model)$/i.test(sample.modelType)?'SP':'Unknown');sel.onchange=()=>{modelOverrides[model]=sel.value;try{localStorage.setItem('tbis-model-categories',JSON.stringify(modelOverrides))}catch(e){}renderAll()}});$('classificationCoverage').textContent=fmtPct(a.modelCoverage)+' classified'}
+function inventoryGenericRows(rows){let headerIndex=-1,headers=null,scoreBest=0;for(let i=0;i<Math.min(rows.length,100);i++){const row=rows[i],codes=row.map(compact);const hasCode=codes.some(x=>['materialcode','materialno','partcode','partnumber','itemcode','sku'].includes(x));const hasQty=codes.some(x=>['availableqty','availablequantity','stockqty','quantity','qty','onhand','onhandqty','currentstock','balance'].includes(x));if(hasCode&&hasQty){headerIndex=i;headers=row.map(v=>TBISImporter.clean(v));break}}if(headerIndex<0)throw new Error('Could not map inventory file. Include a Material Code/Part Code column and an Available Quantity/Stock Qty column.');const ci=fieldIndex(headers,['Material Code','MaterialCode','Material No','Part Code','Item Code','SKU']),qi=fieldIndex(headers,['Available Qty','Available Quantity','Stock Qty','Quantity','Qty','On Hand','On Hand Qty','Current Stock','Balance']),di=fieldIndex(headers,['Material Description','MaterialDesc','Part Description','Description']);const map=new Map();for(const row of rows.slice(headerIndex+1)){const code=TBISImporter.clean(row[ci]);if(!code)continue;const qty=Number(String(row[qi]??'').replace(/,/g,''));map.set(code,{qty:Number.isFinite(qty)?qty:0,desc:di>=0?TBISImporter.clean(row[di]):''})}if(!map.size)throw new Error('Inventory columns were found, but no material rows had a material code.');return map}
+async function loadInventory(file){try{const bytes=new Uint8Array(await file.arrayBuffer()),kind=TBISImporter.detectFileKind(bytes,file.name);let rows;if(kind==='xlsx'||kind==='xls'){if(!window.XLSX)throw new Error('Excel reader did not load.');const wb=XLSX.read(bytes,{type:'array'});const sheet=wb.Sheets[wb.SheetNames[0]];rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false,blankrows:false})}else{const text=new TextDecoder('utf-8').decode(bytes);let best=null;for(const sep of ['\\t',',',';','|']){try{const r=TBISImporter.parseDelimited(text,sep);const hits=r.slice(0,100).filter(row=>row.some(v=>['materialcode','materialno','partcode','partnumber','itemcode','sku'].includes(compact(v)))&&row.some(v=>['availableqty','availablequantity','stockqty','quantity','qty','onhand','onhandqty','currentstock','balance'].includes(compact(v)))).length;if(hits&&(!best||hits>best.hits))best={rows:r,hits}}catch(e){}}if(!best)throw new Error('Could not detect the inventory table.');rows=best.rows}inventoryMap=inventoryGenericRows(rows);inventoryName=file.name;renderAll();showMessage('inventoryMsg','success','Inventory mapped: '+inventoryMap.size+' material codes. Possible PO/stock matches are now shown.')}catch(e){showMessage('inventoryMsg','error',e.message||'Inventory import failed.')}}
+
+function buildWorkbook(){const a=lastAnalysis;if(!a||!window.XLSX){alert('Spreadsheet export needs the SheetJS library. Connect to the internet and try again.');return}if(a.under.length+a.out.length!==a.jobs.length){alert('Management pack blocked: warranty + out-of-warranty does not equal total jobs. Resolve unclassified warranty rows before exporting.');return}const wb=XLSX.utils.book_new();function add(name,header,rows){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([header,...rows]),name)}const summary=[['TBIS MANAGEMENT SUMMARY'],['Reporting period',$('periodInfo').textContent],['Unique jobs',a.jobs.length],['Imported rows',a.rawCount],['Duplicate rows',a.duplicates],['Under warranty',a.under.length],['Out of warranty',a.out.length],['Under warranty %',pct(a.under.length,a.jobs.length)],['Out warranty %',pct(a.out.length,a.jobs.length)],['OOW cash received PKR',a.revenue],['Revenue target PKR',1000000],['Revenue achievement %',pct(a.revenue,1000000)],['PO jobs',a.po.length],['PO rate %',pct(a.po.length,a.jobs.length)],['NOPO overdue jobs (≥24h)',a.noPoOver.length],['Ready for delivery',a.rfd.length],['RWR jobs',a.rwr.length],['RWR out-warranty jobs',a.rwrOut.length],['RWR / OOW %',pct(a.rwrOut.length,a.out.length)],['Bounce matches in uploaded history',a.bounce.total],['Bounce %',pct(a.bounce.total,a.jobs.length)],['1h KPI % (classified eligible only)',pct(a.quickOk.length,a.quickDecided.length)],['2h PO KPI % (classified eligible only)',pct(a.poOnTime.length,a.poDecided.length)],['3-day PO TAT %',pct(a.po3day.length,a.poCompleted.length)],['Customer satisfaction','Not provided by this CRM export'],['Inventory validation',a.inventoryReady?'Inventory file imported':'Not provided']];add('KPI Summary',['Metric','Value'],summary);add('Daily',['Date','New Jobs','Repairs Completed','Returned','PO Jobs','Under Warranty','Out Warranty','OOW Cash PKR'],a.daily.map(x=>[x.date,x.newJobs,x.repaired,x.returned,x.po,x.under,x.out,x.revenue]));add('Weekly',['Week Start','New Jobs','Repairs Completed','Returned','PO Jobs','Under Warranty','Out Warranty','OOW Cash PKR'],a.weekly.map(x=>[x.period,x.jobs,x.repaired,x.returned,x.po,x.under,x.out,x.revenue]));add('Monthly',['Month','New Jobs','Repairs Completed','Returned','PO Jobs','Under Warranty','Out Warranty','OOW Cash PKR'],a.monthly.map(x=>[x.period,x.jobs,x.repaired,x.returned,x.po,x.under,x.out,x.revenue]));add('TAT Detail',['JS No','Shop Code','Model','Service Type','Status','Created On','Repair Complete Date','Turnaround Minutes','PO/AP Found','PO/AP Date','PO Age Minutes'],a.jobs.map(r=>[r.job,r.shopCode,r.model,r.service,r.status,r.createdAt?dateText(r.createdAt):'',r.completeAt?dateText(r.completeAt):'',durationMinutes(r.createdAt,r.completeAt),r.hasPO?'Yes':'No',r.poAt?dateText(r.poAt):'',durationMinutes(r.createdAt,r.poAt)]));add('PO Breakdown',['Service Type','PO Jobs'],Object.entries(a.poByService).map(([k,v])=>[k,v]));add('Top Models',['Model','Jobs'],a.topModels.map(x=>[x.name,x.count]));add('Top Consumed Parts',['Material Code','Description','Quantity','Lines'],a.topParts.map(x=>[x.code,x.desc,x.qty,x.jobs]));add('Top PO Materials',['Material Code','Description','PO Lines','Quantity'],a.topPoMaterials.map(x=>[x.code,x.desc,x.jobs,x.qty]));add('Activation Policy',['Service Type','Jobs','Activation Dates Found','Eligible Within 7 Days','Missing Activation'],['DAP','DOA','SWAP'].map(k=>[k,a.activation[k.toLowerCase()].total,a.activation[k.toLowerCase()].withDates,a.activation[k.toLowerCase()].eligible,a.activation[k.toLowerCase()].missing]));add('Exceptions',['JS No','Shop Code','Shop Name','Model','Service Type','Status','Created On','Repair Complete Date','PO/AP Found','PO/AP Date','Action'],a.jobs.filter(r=>isOpen(r)||r.completeAt&&!r.returnAt||r.poDateMissing).map(r=>[r.job,r.shopCode,r.shopName,r.model,r.service,r.status,r.createdAt?dateText(r.createdAt):'',r.completeAt?dateText(r.completeAt):'',r.hasPO?'Yes':'No',r.poAt?dateText(r.poAt):'',r.poDateMissing?'PO date missing':isOpen(r)?'Open job':r.completeAt&&!r.returnAt?'Ready for delivery':'Review']));add('Data Health',['Check','Value'],[['Imported rows',a.rawCount],['Unique JS No',a.uniqueCount],['Duplicate rows',a.duplicates],['Missing Created On',a.jobsNoCreated],['Unknown warranty',a.missingWarranty],['PO date missing',a.missingPoDate.length],['Unknown/invalid repair duration',a.invalidDur.length],['Device category coverage %',a.modelCoverage],['Stock flag coverage %',pct(a.stockKnown,a.jobs.length)],['Bounce same fault',a.bounce.same],['Bounce different fault',a.bounce.different],['Bounce unclassified fault',a.bounce.unknown]]);if(a.inventoryReady)add('PO Stock Flags',['JS No','Model','Shop','Material Code','Description','Current Available Qty'],a.poStockFlags.map(x=>[x.job,x.model,x.shop,x.code,x.desc,x.stock]));XLSX.writeFile(wb,'TBIS_Management_Report.xlsx')}
+function resetAll(){rawJobs=[];fileMeta=[];inventoryMap=null;inventoryName='';$('crmFiles').value='';$('filechips').innerHTML='';$('importMsg').classList.add('hidden');$('inventoryResult').innerHTML='';$('inventoryMsg').classList.add('hidden');$('inventoryFile').value='';$('period').value='all';$('fromDate').value='';$('toDate').value='';$('emptyState').classList.remove('hidden');$('exportBtn').disabled=true;$('exportBtn2').disabled=true;['overviewKpis','tatKpis','revenueKpis','partsKpis','dataKpis'].forEach(id=>$(id).innerHTML='')}
+function switchView(view){activeView=view;document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.querySelectorAll('.tabview').forEach(p=>p.classList.toggle('active',p.id==='view-'+view))}
+$('chooseBtn').onclick=()=>$('crmFiles').click();$('emptyChoose').onclick=()=>$('crmFiles').click();$('crmFiles').onchange=e=>loadCrmFiles([...e.target.files]);$('clearBtn').onclick=resetAll;$('exportBtn').onclick=buildWorkbook;$('exportBtn2').onclick=buildWorkbook;$('printBtn').onclick=()=>window.print();$('period').onchange=()=>{const custom=$('period').value==='custom';$('fromWrap').classList.toggle('hidden',!custom);$('toWrap').classList.toggle('hidden',!custom);renderAll()};$('fromDate').onchange=renderAll;$('toDate').onchange=renderAll;$('asof').onchange=renderAll;document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>switchView(b.dataset.view));$('inventoryBtn').onclick=()=>$('inventoryFile').click();$('inventoryFile').onchange=e=>{if(e.target.files[0])loadInventory(e.target.files[0])};$('fromWrap').classList.add('hidden');$('toWrap').classList.add('hidden');$('asof').value=localInputValue(new Date());$('period').value='all';
 })();
 </script>
-</body></html>
+</body>
+</html>
