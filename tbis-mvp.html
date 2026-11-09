@@ -45,7 +45,7 @@
   <div class="grid3">
    <section class="panel listpanel"><div class="panelhead"><div><h3>7-day activation policy</h3><p>SWAP, DAP and DOA date coverage</p></div></div><div class="qualitygrid" id="policyPulse"></div></section>
    <section class="panel listpanel"><div class="panelhead"><div><h3>Engineer workload</h3><p>Anonymous groups · no staff names or codes shown</p></div></div><div class="ranklist" id="engineers"></div></section>
-   <section class="panel listpanel"><div class="panelhead"><div><h3>Inventory control</h3><p>Stock comparison requires an inventory report</p></div></div><div class="qualityitem"><strong>Not connected</strong><span>Consumed parts and PO lines are available, but stock-on-hand is not in this CRM file. Upload the inventory export before TBIS flags potentially avoidable POs.</span></div></section>
+   <section class="panel listpanel"><div class="panelhead"><div><h3>Inventory control</h3><p>Stock comparison requires an inventory report</p></div></div><div class="qualityitem"><strong>Not connected</strong><span>Consumed parts and PO/AP fields are available, but this version does not yet import stock-on-hand reports. A separate inventory importer and material-code mapping are required before TBIS can flag avoidable POs.</span></div></section>
   </div>
   <div class="grid2">
    <section class="panel chartpanel"><div class="panelhead"><div><h3>Weekly performance</h3><p>Week-by-week and previous-week comparison</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Week starts</th><th>Jobs</th><th>OW amount</th><th>PO rate</th><th>1H rate</th><th>2H PO</th><th>3-day TAT</th><th>Bounce</th><th>Avg repair TAT</th><th>CSAT</th></tr></thead><tbody id="weekly"></tbody></table></div></section>
@@ -54,7 +54,7 @@
   <section class="panel listpanel" style="margin-top:14px"><div class="panelhead"><div><h3>Daily operations pulse</h3><p>New, repaired, returned and PO activity for one selected day</p></div><label class="field">ANALYSIS DATE<input id="dailyDate" type="date"></label></div><div class="qualitygrid" id="dailyPulse"></div></section>
   <section class="panel tablepanel">
    <div class="tablehead"><div><h3>Management action list</h3><p>Jobs needing review · personal customer, device and technician fields are excluded</p></div><div class="tabletools"><select id="exceptionType"><option value="all">All exceptions</option><option value="repair">1H repair misses</option><option value="po">2H PO misses</option><option value="nopo">NOPO ≥24h</option><option value="three">3-day TAT misses</option><option value="rfd">RFD older than 2 days</option><option value="invalid">Missing / invalid TAT</option></select><input id="jssearch" type="search" placeholder="Find JS No"></div></div>
-   <div class="tablewrap"><table><thead><tr><th>JS No</th><th>Receiving</th><th>Category</th><th>Model</th><th>Warranty</th><th>Created On</th><th>Repair Complete</th><th>TAT / Age</th><th>PO/AP</th><th>Status</th><th>Action needed</th></tr></thead><tbody id="exceptions"></tbody></table><div class="empty hide" id="noexceptions">No jobs match this view.</div></div>
+   <div class="tablewrap"><table><thead><tr><th>JS No</th><th>Branch</th><th>Receiving</th><th>Category</th><th>Model</th><th>Warranty</th><th>Created On</th><th>Repair Complete</th><th>TAT / Age</th><th>PO/AP</th><th>Status</th><th>Action needed</th></tr></thead><tbody id="exceptions"></tbody></table><div class="empty hide" id="noexceptions">No jobs match this view.</div></div>
    <div class="tablehead"><span id="exceptionCount" class="metaText">0 exceptions</span><button class="btn secondary" id="exportCsv">Export safe CSV</button></div>
   </section>
   <section class="panel dataquality"><div class="panelhead"><div><h3>Data integrity & coverage</h3><p>Checks before management reporting</p></div><span id="integrityBadge" class="tag"></span></div><div class="qualitygrid" id="quality"></div><div class="footnote" id="qualityNotes"></div></section>
@@ -321,8 +321,9 @@ function rankRows(items,type){
 }
 function dateRangeLabel(c){if(c.from&&c.to)return c.from.toLocaleDateString("en-GB")+" – "+c.to.toLocaleDateString("en-GB");return "All available dates"}
 function populateShops(){const map=new Map();records.forEach(r=>{if(r.shop)map.set(r.shop,r.shopName||r.shop)});const items=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));$("shopFilter").innerHTML='<option value="">All branches</option>'+items.map(([code,name])=>'<option value="'+esc(code)+'">'+esc(code+" · "+name)+"</option>").join("");if(items.length===1)$("shopFilter").value=items[0][0]}
-function dailyActivity(list){
- const keys=new Set();list.forEach(r=>[r.createdAt,r.completedAt,r.returnAt,r.poDate].forEach(d=>{if(d)keys.add(localKey(d))}));
+function dailyActivity(list,from,to){
+ const inRange=d=>d&&(!from||d>=from)&&(!to||d<=to);
+ const keys=new Set();list.forEach(r=>[r.createdAt,r.completedAt,r.returnAt,r.poDate].forEach(d=>{if(inRange(d))keys.add(localKey(d))}));
  const days=[...keys].sort();const same=(d,k)=>d&&localKey(d)===k;
  return days.map(k=>{const created=list.filter(r=>same(r.createdAt,k));const repaired=list.filter(r=>same(r.completedAt,k));const returned=list.filter(r=>same(r.returnAt,k)&&["returned","swapcertification"].includes(compact(r.status)));const newPO=list.filter(r=>same(r.poDate,k));const oldPORepair=repaired.filter(r=>r.poDate&&localKey(r.poDate)<k);const oldPOReturn=returned.filter(r=>r.poDate&&localKey(r.poDate)<k);return {date:k,newJobs:created.length,repaired:repaired.length,returned:returned.length,newPO:newPO.length,oldPORepair:oldPORepair.length,oldPOReturn:oldPOReturn.length}});
 }
@@ -390,7 +391,7 @@ function render(){
   kpi("Warranty mix",c.warranty.length+" / "+c.outWarranty.length,"Warranty "+percent(c.warranty.length,c.total)+" (target 60%) · Out warranty "+percent(c.outWarranty.length,c.total)+" (target 40%)","◉","",null),
   kpi("Out-warranty amount",money(c.owAmount),"<b>Period target:</b> "+money(c.periodRevenueTarget)+" ("+c.targetMonths+" month(s)) · "+percent(c.owAmount,c.periodRevenueTarget)+" achieved","₨",c.owAmount>=c.periodRevenueTarget?"good":"warn","CRM Total Amt, not collections"),
   kpi("1-hour TAT",percent(c.onePass.length,c.oneKnown.length),c.onePass.length+" within / "+c.oneKnown.length+" measured · "+(c.oneKnown.length-c.onePass.length)+" late · "+(c.oneEligibleRows.length-c.oneKnown.length)+" unknown · "+c.oneExcludedShortage+" shortage records excluded","◷",c.oneKnown.length&&c.onePass.length/c.oneKnown.length>=num($("t1").value)/100?"good":"bad","Is Shortage=No proxy · stock not verified"),
-  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" timed · "+(c.twoKnown.length-c.twoPass.length)+" late · "+(c.twoScope.length-c.twoKnown.length)+" unknown","↗",c.twoKnown.length&&c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP Is Shortage=Yes"),
+  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" timed · "+(c.twoKnown.length-c.twoPass.length)+" late · "+c.twoNoPO+" no PO/AP · "+c.twoDateUnknown+" PO date unknown","↗",c.twoKnown.length&&c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP Is Shortage=Yes"),
   kpi("Completed within 1H",c.onePass.length+" jobs",c.onePass.length+" on time · "+(c.oneKnown.length-c.onePass.length)+" over target · "+(c.oneEligibleRows.length-c.oneKnown.length)+" unknown","✓","good","Eligible measured jobs"),
   kpi("Open jobs",c.open.length+" jobs",c.repairOver.length+" eligible 1H repair overdue · "+c.noPO.length+" NOPO ≥24h","◷",c.open.length?"warn":"good","As-of date applies"),
   kpi("Open repair overdue",c.repairOver.length+" jobs","Open eligible SP Carry In / Online with Is Shortage=No for at least 1 hour","! ",c.repairOver.length?"bad":"good","Availability proxy only"),
@@ -422,7 +423,7 @@ function render(){
  $("policyPulse").innerHTML=["SWAP","DAP","DOA"].map(t=>{const x=policyByType[t]||{all:0,known:0,within:0};return '<div class="qualityitem"><strong>'+x.within+' / '+x.known+'</strong><span>'+t+' · '+(x.all-x.known)+' missing activation date</span></div>'}).join("");
  $("engineers").innerHTML=rankRows(topEngineers(c.all));
  if(!$("dailyDate").value)$("dailyDate").value=lastDate;
- renderDailyPulse(all,$("dailyDate").value);
+ renderDailyPulse(c.activityRecords,$("dailyDate").value);
  renderExceptions(c);
  renderQuality(c);
  $("pack").disabled=fileMetas.length===0||records.length!==new Set(records.map(r=>r.job)).size;
@@ -465,7 +466,7 @@ function renderExceptions(c){
   if(r.threeOpenOver)actions.push("Open >3 days after PO");
   if(r.rfdAge!==null&&r.rfdAge>2)actions.push("RFD follow-up");
   if(!r.completedAt&&r.done)actions.push("TAT timestamp missing");
-  return "<tr><td class='job'>"+esc(r.job)+"</td><td>"+esc(r.source||"—")+"</td><td>"+esc(r.category||"—")+"</td><td>"+esc(r.model||"—")+"</td><td>"+esc(r.warranty||"—")+"</td><td>"+esc(dateText(r.createdAt))+"</td><td>"+esc(dateText(r.completedAt))+"</td><td>"+esc(age)+"</td><td><span class='tag "+(r.hasPO?"ok":"warn")+"'>"+(r.hasPO?"Found":"Not found")+"</span></td><td>"+esc(r.status||"—")+"</td><td>"+esc(actions.join(" · ")||"Review")+"</td></tr>";
+  return "<tr><td class='job'>"+esc(r.job)+"</td><td>"+esc(r.shopName||r.shop||"—")+"</td><td>"+esc(r.source||"—")+"</td><td>"+esc(r.category||"—")+"</td><td>"+esc(r.model||"—")+"</td><td>"+esc(r.warranty||"—")+"</td><td>"+esc(dateText(r.createdAt))+"</td><td>"+esc(dateText(r.completedAt))+"</td><td>"+esc(age)+"</td><td><span class='tag "+(r.hasPO?"ok":"warn")+"'>"+(r.hasPO?"Found":"Not found")+"</span></td><td>"+esc(r.status||"—")+"</td><td>"+esc(actions.join(" · ")||"Review")+"</td></tr>";
  }).join("");
  $("noexceptions").classList.toggle("hide",list.length>0);
  $("exceptionCount").textContent=list.length+" jobs in this view";
@@ -488,8 +489,8 @@ function renderQuality(c){
  $("qualityNotes").textContent=issues.length?issues.join(" "):"Unique job identifiers and warranty reconciliation passed for this imported selection. Missing completion timestamps remain visible as unknown, not estimated.";
 }
 function exportCsv(){
- const heads=["JS No","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Turnaround / Age","PO/AP found","Document Status","Action"];
- const rows=[heads,...currentExceptions.map(r=>[r.job,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status,
+ const heads=["JS No","Branch","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Turnaround / Age","PO/AP found","Document Status","Action"];
+ const rows=[heads,...currentExceptions.map(r=>[r.job,r.shopName||r.shop,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status,
   [r.lateRepair?"1H target missed":"",r.repairOver?"Open >1H":"",r.latePO?"PO >2H":"",r.nopoOver?"NOPO ≥24H":"",r.lateThree?"3-day close late":"",r.rfdAge>2?"RFD follow-up":""].filter(Boolean).join("; ")])];
  const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
  const a=document.createElement("a"),url=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.href=url;a.download="TBIS-safe-exceptions.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -518,16 +519,16 @@ function buildPack(){
  ["Data integrity","No duplicates","No duplicates permitted","Rows are never silently deduplicated"]
  ];
  add("Management Summary",summary);
- add("Daily Activity",[["Event date","New jobs","Repairs completed","Jobs returned","New PO/AP","Old PO jobs repaired","Old PO jobs returned"],...dailyActivity(c.all).map(x=>[x.date,x.newJobs,x.repaired,x.returned,x.newPO,x.oldPORepair,x.oldPOReturn])]);
+ add("Daily Activity",[["Event date","New jobs","Repairs completed","Jobs returned","New PO/AP","Old PO jobs repaired","Old PO jobs returned"],...dailyActivity(c.activityRecords,c.from,c.to).map(x=>[x.date,x.newJobs,x.repaired,x.returned,x.newPO,x.oldPORepair,x.oldPOReturn])]);
  add("Weekly",[["Week starts","Jobs","Out Warranty Total Amt (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...weekRows(c.all).map(x=>[x.week,x.jobs,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
  add("Monthly",[["Month","Jobs","Monthly job target progress","Warranty %","Out-warranty amount (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","RWR jobs","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...monthRows(c.all).map(x=>[x.month,x.jobs,percent(x.jobs,num($("jobtarget").value)),x.warrantyPct,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.rwr,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
  add("Top Models",[["Rank","Model","Brand","Jobs"],...topModels(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
  add("Top Parts",[["Rank","Part code / description","Jobs / details","Quantity"],...topParts(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
  add("Engineer Summary",[["Engineer label","Workload / average TAT","Within-1-hour rate"],...topEngineers(c.all).map(x=>[x.name,x.detail,x.value])]);
  add("7-Day Policy",[["Service type","Jobs in category","Valid activation dates","Received within 7 days","Missing / invalid dates"],...["SWAP","DAP","DOA"].map(t=>{const g=c.policyScope.filter(r=>r.service.toUpperCase()===t),valid=g.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0),within=valid.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);return [t,g.length,valid.length,within.length,g.length-valid.length]})]);
- add("Inventory Readiness",[["Control","Status / count"],["Stock-on-hand reconciliation","Not available: upload branch inventory report"],["PO jobs",c.po.length],["Avoidable PO conclusion","Not calculated without a stock snapshot and matching material codes"]]);
+ add("Inventory Readiness",[["Control","Status / count"],["Stock-on-hand reconciliation","Not implemented in this version; inventory import and material-code matching are still required"],["PO jobs",c.po.length],["Avoidable PO conclusion","Not calculated without a stock snapshot and matching material codes"]]);
  add("PO Breakdown",[["PO type","Jobs"],...poTypeRows(c.all).map(x=>[x.name,x.value])]);
- add("Data Quality",[["Check","Result"],["Imported rows",records.length],["Unique JS No",new Set(records.map(r=>r.job)).size],["Duplicate JS No",records.length-new Set(records.map(r=>r.job)).size],["Rows with invalid Created On",c.invalidCreated],["Rows with missing/invalid completion timestamp",c.invalidCompletion],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")],["Source files",fileMetas.map(f=>f.name).join(" | ")],["Important note","No customer names, contact numbers, device identifiers or technician names are included."]]);
+ add("Data Quality",[["Check","Result"],["Imported rows",records.length],["Unique JS No",new Set(records.map(r=>r.job)).size],["Duplicate JS No",records.length-new Set(records.map(r=>r.job)).size],["Rows with invalid Created On (all uploaded files)",c.invalidCreated],["Rows with missing/invalid completion timestamp",c.invalidCompletion],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")],["Source files",fileMetas.map(f=>f.name).join(" | ")],["Important note","No customer names, contact numbers, device identifiers or technician names are included."]]);
  add("Exceptions",[["JS No","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Duration / age","PO/AP found","Status"],...currentExceptions.map(r=>[r.job,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status])]);
  XLSX.writeFile(wb,"TBIS-Management-Pack.xlsx");
 }
@@ -565,7 +566,7 @@ $("drop").ondrop=e=>{e.preventDefault();$("drop").style.borderColor="";loadFiles
 $("files").onchange=e=>loadFiles([...e.target.files]);
 $("clear").onclick=clearReports;$("pack").onclick=buildPack;$("exportCsv").onclick=exportCsv;
 ["from","to","shopFilter","asof","t1","t2","jobtarget","revtarget"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length)render()}));
-["dailyDate","exceptionType"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length){const c=compute();renderDailyPulse(c.all,$("dailyDate").value);renderExceptions(c)}}));
+["dailyDate","exceptionType"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length){const c=compute();renderDailyPulse(c.activityRecords,$("dailyDate").value);renderExceptions(c)}}));
 $("jssearch").addEventListener("input",()=>{if(records.length)renderExceptions(compute())});
 })();
 </script>
