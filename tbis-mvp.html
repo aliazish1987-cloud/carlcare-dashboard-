@@ -324,6 +324,7 @@ function minmaxDates(){
  $('fromDate').value=dayKey(ds[0]);$('toDate').value=dayKey(ds[ds.length-1]);$('dailyDate').value=dayKey(ds[ds.length-1]);
 }
 function isDone(r){return !!r.completedAt||['returned','closed','repair completed'].indexOf(TBISImporter.norm(r.status))>=0}
+function isOneHourEligible(r){return compact(r.category)==='sp'&&['carryin','online','onlinereservation'].indexOf(compact(r.source))>=0&&r.shortage==='no'}
 function turn(r){if(!r.createdAt||!r.completedAt)return null;const m=(r.completedAt-r.createdAt)/60000;return m<0?null:m}
 function poMins(r){if(!r.createdAt||!r.poDate)return null;const m=(r.poDate-r.createdAt)/60000;return m<0?null:m}
 function inRange(r,start,end){if(!r.createdAt)return false;return (!start||r.createdAt>=start)&&(!end||r.createdAt<end)}
@@ -334,7 +335,7 @@ function metricSet(rows,asOf){
  const po=rows.filter(function(r){return r.hasPO});
  const outRevenue=oow.reduce(function(s,r){return s+r.receivedAmount},0);
  const rwr=oow.filter(function(r){return TBISImporter.norm(r.service)==='rwr'}).length;
- const one=rows.filter(function(r){return compact(r.category)==='sp'&&['carryin','online','onlinereservation'].indexOf(compact(r.source))>=0&&r.shortage==='no'});
+ const one=rows.filter(isOneHourEligible);
  const oneKnown=one.filter(function(r){const m=turn(r);return m!==null});
  const oneOn=oneKnown.filter(function(r){return turn(r)<=60}).length;
  const two=rows.filter(function(r){return compact(r.category)==='sp'&&r.shortage==='yes'});
@@ -462,12 +463,13 @@ function renderInventory(rows){
 function rowResult(r,asOf){
  const duration=turn(r),age=r.createdAt&&asOf?(asOf-r.createdAt)/60000:null,pm=poMins(r),done=isDone(r);
  if(r.createdAt&&r.completedAt&&r.completedAt<r.createdAt)return 'Invalid timestamp order';
- if(!done&&r.shortage==='no'&&compact(r.category)==='sp'&&['carryin','online','onlinereservation'].indexOf(compact(r.source))>=0&&age!==null&&age>=60)return '1-hour repair overdue';
+ if(!done&&isOneHourEligible(r)&&age!==null&&age>=60)return '1-hour repair overdue';
  if(!done&&!r.hasPO&&age!==null&&age>=1440)return 'NOPO · 24h overdue';
  if(compact(r.category)==='sp'&&r.shortage==='yes'&&pm!==null&&pm>120)return 'PO created late';
  if(compact(r.category)==='sp'&&r.shortage==='yes'&&r.hasPO&&pm===null)return 'PO timing unverified';
- if(duration!==null&&duration>60)return 'Completed over 1 hour';
- if(duration!==null&&duration<=60)return 'Completed within 1 hour';
+ if(isOneHourEligible(r)&&duration!==null&&duration>60)return 'Completed over 1 hour';
+ if(isOneHourEligible(r)&&duration!==null&&duration<=60)return 'Completed within 1 hour';
+ if(duration!==null)return 'Completed · TAT '+fmtHours(duration);
  if(done)return 'Completed · duration unknown';
  return 'Open · within threshold';
 }
@@ -475,7 +477,7 @@ function getViewList(rows,asOf){
  const v=$('jobView').value||'exceptions',q=TBISImporter.norm($('jobSearch').value);
  return rows.filter(function(r){
   const d=turn(r),age=r.createdAt&&asOf?(asOf-r.createdAt)/60000:null,pm=poMins(r),done=isDone(r);
-  let yes=v==='all'?true:v==='open'?!done:v==='late'?d!==null&&d>60:v==='ontime'?d!==null&&d<=60:v==='nopo'?!done&&!r.hasPO&&age!==null&&age>=1440:v==='repair'?((d!==null&&d>60)||(!done&&r.shortage==='no'&&compact(r.category)==='sp'&&['carryin','online','onlinereservation'].indexOf(compact(r.source))>=0&&age!==null&&age>=60)):v==='po'?(compact(r.category)==='sp'&&r.shortage==='yes'&&(pm!==null&&pm>120||(!r.hasPO&&age!==null&&age>=120)||(r.hasPO&&pm===null))):(!done&&((!r.hasPO&&age!==null&&age>=1440)||(r.shortage==='no'&&compact(r.category)==='sp'&&age!==null&&age>=60))||(d!==null&&d>60)||(pm!==null&&pm>120));
+  let yes=v==='all'?true:v==='open'?!done:v==='late'?isOneHourEligible(r)&&d!==null&&d>60:v==='ontime'?isOneHourEligible(r)&&d!==null&&d<=60:v==='nopo'?!done&&!r.hasPO&&age!==null&&age>=1440:v==='repair'?((isOneHourEligible(r)&&d!==null&&d>60)||(!done&&isOneHourEligible(r)&&age!==null&&age>=60)):v==='po'?(compact(r.category)==='sp'&&r.shortage==='yes'&&(pm!==null&&pm>120||(!r.hasPO&&age!==null&&age>=120)||(r.hasPO&&pm===null))):(!done&&((!r.hasPO&&age!==null&&age>=1440)||(r.shortage==='no'&&compact(r.category)==='sp'&&age!==null&&age>=60))||(isOneHourEligible(r)&&d!==null&&d>60)||(pm!==null&&pm>120));
   return yes&&(!q||TBISImporter.norm(r.job).indexOf(q)>=0);
  });
 }
@@ -617,7 +619,7 @@ async function loadCrmFiles(files){
    const file=sorted[i],table=await readTable(file),parsed=makeFileRecords(file,table,i);results.push(parsed);
   }
   mergeImported(results);minmaxDates();
-  const metaText=fileInfo.map(function(x){return x.name+': '+x.rows+' JS rows · '+x.unique+' unique · '+x.duplicates+' repeated · '+x.kind.toUpperCase()+(x.delimiter? ' · '+(x.delimiter==='\t'?'TAB':x.delimiter):'')+' · '+x.columns+' columns'}).join(' | ');
+  const metaText=fileInfo.map(function(x){return x.name+': '+x.rows+' JS rows · '+x.unique+' unique · '+x.duplicates+' repeated · '+x.kind.toUpperCase()+(x.kind==='text'&&x.delimiter?' · separator '+(x.delimiter==='\t'?'TAB':x.delimiter):x.kind!=='text'&&x.sheet?' · sheet '+x.sheet:'')+' · '+x.columns+' columns'}).join(' | ');
   $('fileMeta').textContent=metaText+' · Total source occurrences: '+allOccurrences+' · consolidated rows: '+records.length+' · repeated JS numbers across reports: '+duplicateIds+' · within-file duplicate rows: '+withinFileDuplicateIds+'.';
   const warnings=[];
   if(withinFileDuplicateIds)warnings.push(withinFileDuplicateIds+' duplicate rows inside a source file were preserved. Official workbook export is blocked until these are reviewed.');
