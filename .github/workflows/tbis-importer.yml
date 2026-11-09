@@ -1,0 +1,15 @@
+name: TBIS importer regression tests
+on:
+  push:
+    branches: [build/tbis-excel-mvp]
+  pull_request:
+    branches: [build/tbis-excel-mvp]
+jobs:
+  importer-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --test tests/tbis-importer.test.cjs
