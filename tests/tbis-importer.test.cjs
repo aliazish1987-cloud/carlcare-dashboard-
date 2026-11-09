@@ -20,3 +20,7 @@ test('568 non-empty JS No records are counted',()=>{const rows=[header,...Array.
 test('duplicate JS No values are counted, not deduplicated',()=>{const x=parsed(csv([header,row('DUP1'),row('DUP1'),row('UNIQUE')],'\t'));assert.equal(x.rowCount,3);assert.equal(x.uniqueCount,2);assert.equal(x.duplicateCount,1)});
 test('incorrect header produces a helpful error',()=>{assert.throws(()=>parsed(csv([['Name','Date','Notes'],['a','b','c']],',')),/CRM header not found/)});
 test('malformed quoted field produces a helpful error',()=>{assert.throws(()=>parsed('"JS No","Reference From","Created On","Document Status Name","ShopCode","ShopName","Warranty Status","Repair Complete Date","PO/APCode1","PO/APDate1\n"unterminated'),/Malformed/)});
+
+test('semicolon and pipe delimiters are detected',()=>{for(const sep of [';','|']){const x=parsed(csv([header,row('JS001')],sep));assert.equal(x.delimiter,sep);assert.equal(x.rowCount,1)}});
+test('header search continues beyond 1,000 physical rows',()=>{const prefix=Array.from({length:1105},(_,i)=>'Title row '+i).join('\n')+'\n';const x=parsed(prefix+csv([header,row('JS001')],'\t'));assert.equal(x.headerIndex,1105);assert.equal(x.rowCount,1)});
+test('unsupported file extensions have a helpful error',()=>{assert.throws(()=>importer.validateExtension('report.pdf'),/Unsupported file format/);assert.equal(importer.validateExtension('report.xlsx'),'xlsx')});
