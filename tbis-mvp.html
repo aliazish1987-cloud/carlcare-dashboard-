@@ -42,6 +42,11 @@
    <section class="panel listpanel"><div class="panelhead"><div><h3>Top 7 consumed parts</h3><p>Ranked by recorded consumption quantity</p></div></div><div class="ranklist" id="parts"></div></section>
    <section class="panel listpanel"><div class="panelhead"><div><h3>PO breakdown</h3><p>PO jobs by service category</p></div></div><div class="ranklist" id="poBreakdown"></div></section>
   </div>
+  <div class="grid3">
+   <section class="panel listpanel"><div class="panelhead"><div><h3>7-day activation policy</h3><p>SWAP, DAP and DOA date coverage</p></div></div><div class="qualitygrid" id="policyPulse"></div></section>
+   <section class="panel listpanel"><div class="panelhead"><div><h3>Engineer workload</h3><p>Anonymous groups · no staff names or codes shown</p></div></div><div class="ranklist" id="engineers"></div></section>
+   <section class="panel listpanel"><div class="panelhead"><div><h3>Inventory control</h3><p>Stock comparison requires an inventory report</p></div></div><div class="qualityitem"><strong>Not connected</strong><span>Consumed parts and PO lines are available, but stock-on-hand is not in this CRM file. Upload the inventory export before TBIS flags potentially avoidable POs.</span></div></section>
+  </div>
   <div class="grid2">
    <section class="panel chartpanel"><div class="panelhead"><div><h3>Weekly performance</h3><p>Week-by-week and previous-week comparison</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Week starts</th><th>Jobs</th><th>OW amount</th><th>PO jobs</th><th>1H within</th></tr></thead><tbody id="weekly"></tbody></table></div></section>
    <section class="panel chartpanel"><div class="panelhead"><div><h3>Monthly performance</h3><p>Consolidated month view</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Month</th><th>Jobs</th><th>Warranty</th><th>OW amount</th><th>PO rate</th></tr></thead><tbody id="monthly"></tbody></table></div></section>
@@ -158,7 +163,8 @@ if(typeof module!=='undefined'&&module.exports)module.exports=root.TBISImporter;
 const $=id=>document.getElementById(id);
 let records=[],fileMetas=[],currentExceptions=[],headersFound=[],isBusy=false;
 const dateText=d=>d?new Intl.DateTimeFormat("en-PK",{dateStyle:"medium",timeStyle:"short"}).format(d):"—";
-const dOnly=d=>d?d.toISOString().slice(0,10):"";
+const localKey=d=>d?d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"):"";
+const dOnly=d=>localKey(d);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const compact=v=>TBISImporter.compact(v);
 const parseDate=v=>{const s=TBISImporter.clean(v);if(!s||s==="207"||s.toLowerCase()==="null")return null;const m=s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);if(m){const d=new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));return Number.isNaN(+d)?null:d}const d=new Date(s);return Number.isNaN(+d)?null:d};
@@ -170,7 +176,7 @@ const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 function headerMap(header){const h={};header.forEach((v,i)=>{const k=compact(v);if(k&&!Object.prototype.hasOwnProperty.call(h,k))h[k]=i});return h}
 function get(row,map,names){for(const n of names){const i=map[compact(n)];if(i!==undefined)return TBISImporter.clean(row[i])}return""}
 const AL={
- job:["JS No","JS Number"],created:["Created On"],complete:["Repair Complete Date"],status:["Document Status Name"],shop:["ShopCode"],shopName:["ShopName"],source:["Reference From"],category:["Category"],warranty:["Warranty Status"],brand:["Brand"],model:["Model"],service:["Service Type"],shortage:["Is Shortage"],activation:["Activation Time"],returned:["Return On"],currency:["Currency"],amount:["Total Amt"],received:["Accumulated Received Amt"],delivery:["Actual Logistics Delivery Date"],device1:["IMEI/SN1"],device2:["IMEI/SN2"]
+ job:["JS No","JS Number"],created:["Created On"],complete:["Repair Complete Date"],status:["Document Status Name"],shop:["ShopCode"],shopName:["ShopName"],source:["Reference From"],category:["Category"],warranty:["Warranty Status"],brand:["Brand"],model:["Model"],service:["Service Type"],shortage:["Is Shortage"],activation:["Activation Time"],returned:["Return On"],currency:["Currency"],amount:["Total Amt"],received:["Accumulated Received Amt"],delivery:["Actual Logistics Delivery Date"],device1:["IMEI/SN1"],device2:["IMEI/SN2"],engineer:["Repaired By (code)"]
 };
 function normalizeRow(row,map,sourceFile){
  const poCodes=[get(row,map,["PO/APCode1"]),get(row,map,["PO/APCode2"]),get(row,map,["PO/APCode3"])];
@@ -191,7 +197,7 @@ function normalizeRow(row,map,sourceFile){
   service:get(row,map,AL.service),shortage:get(row,map,AL.shortage).toLowerCase()==="yes",
   hasPO:poRaw.some(v=>String(v||"").trim()!==""),poDate:poDates[0]||null,poCodes,
   amount:num(get(row,map,AL.amount)),received:num(get(row,map,AL.received)),currency:get(row,map,AL.currency)||"Unknown",
-  consumed,deviceKey:device.replace(/\s/g,"").toUpperCase(),faultSig:faults.join("|"),sourceFile
+  consumed,deviceKey:device.replace(/\s/g,"").toUpperCase(),faultSig:faults.join("|"),engineerKey:get(row,map,AL.engineer),sourceFile
  };
 }
 function validHeader(row){return TBISImporter.validHeader(row)}
@@ -286,12 +292,18 @@ function rankRows(items,type){
 function dateRangeLabel(c){if(c.from&&c.to)return c.from.toLocaleDateString("en-GB")+" – "+c.to.toLocaleDateString("en-GB");return "All available dates"}
 function dailySummaries(list){
  const map=new Map();
- list.forEach(r=>{if(!r.createdAt)return;const k=r.createdAt.toISOString().slice(0,10);if(!map.has(k))map.set(k,[]);map.get(k).push(r)});
+ list.forEach(r=>{if(!r.createdAt)return;const k=localKey(r.createdAt);if(!map.has(k))map.set(k,[]);map.get(k).push(r)});
  return [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([date,jobs])=>({date,jobs:jobs.length}));
 }
 function topModels(list){
  const m=new Map();list.forEach(r=>{if(!r.model)return;const k=r.model;if(!m.has(k))m.set(k,{n:0,brand:r.brand});m.get(k).n++});
  return [...m.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,7).map(([name,v])=>({name,detail:(v.brand||"")+" · model",value:v.n+" jobs"}));
+}
+function topEngineers(list){
+ const groups=new Map();list.forEach(r=>{if(!r.engineerKey)return;if(!groups.has(r.engineerKey))groups.set(r.engineerKey,[]);groups.get(r.engineerKey).push(r)});
+ const sorted=[...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+ const labels=new Map(sorted.map((x,i)=>[x[0],"Engineer "+String(i+1).padStart(2,"0")]));
+ return sorted.map(([key,jobs])=>{const timed=jobs.filter(r=>r.duration!==null);const within=timed.filter(r=>r.duration<=60).length;const avg=timed.length?Math.round(timed.reduce((s,r)=>s+r.duration,0)/timed.length):null;return {name:labels.get(key),detail:jobs.length+" jobs · "+(avg===null?"TAT unknown":"avg "+minsText(avg)),value:percent(within,timed.length)}}).sort((a,b)=>parseInt(b.detail)-parseInt(a.detail)).slice(0,7);
 }
 function topParts(list){
  const m=new Map();list.forEach(r=>r.consumed.forEach(p=>{if(!m.has(p.code))m.set(p.code,{desc:p.desc,qty:0,jobs:0});const x=m.get(p.code);x.qty+=p.qty;x.jobs++}));
@@ -303,7 +315,7 @@ function poTypeRows(list){
  return [...c.entries()].sort((a,b)=>b[1]-a[1]).map(([k,n])=>({name:names[k]||"PO "+k.toUpperCase(),detail:"Service category",value:n+" jobs"}));
 }
 function weekRows(list){
- const groups=groupBy(list,r=>{if(!r.createdAt)return"";const d=new Date(r.createdAt.getFullYear(),r.createdAt.getMonth(),r.createdAt.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return d.toISOString().slice(0,10)});
+ const groups=groupBy(list,r=>{if(!r.createdAt)return"";const d=new Date(r.createdAt.getFullYear(),r.createdAt.getMonth(),r.createdAt.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return localKey(d)});
  return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([wk,jobs])=>{const ow=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));const one=jobs.filter(r=>r.oneMeasured);return {week:wk,jobs:jobs.length,ow:ow.reduce((s,r)=>s+r.amount,0),po:jobs.filter(r=>r.hasPO).length,one:one.filter(r=>r.onePass).length+"/"+one.length,onePct:percent(one.filter(r=>r.onePass).length,one.length)}});
 }
 function monthRows(list){
