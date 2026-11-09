@@ -16,7 +16,9 @@ function detectFileKind(input,filename=''){
  const b=input instanceof Uint8Array?input:new Uint8Array(input);
  if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&b[2]===0x03&&b[3]===0x04)return 'xlsx';
  if(b.length>=8&&[0xD0,0xCF,0x11,0xE0,0xA1,0xB1,0x1A,0xE1].every((v,i)=>b[i]===v))return 'xls';
- const ext=String(filename).split('.').pop().toLowerCase();
+ const rawName=String(filename||'');
+ if(!rawName)return 'text';
+ const ext=rawName.split('.').pop().toLowerCase();
  if(['csv','tsv','txt'].includes(ext))return 'text';
  if(ext==='xlsx'||ext==='xls')return ext;
  return 'unknown';
