@@ -41,6 +41,7 @@
   </div>
  </header>
  <section class="toolbar">
+  <label class="field">Shop<select id="shopFilter"><option value="">All shops</option></select></label>
   <label class="field">Period start<input type="date" id="fromDate"></label>
   <label class="field">Period end<input type="date" id="toDate"></label>
   <label class="field">Daily report date<input type="date" id="dailyDate"></label>
@@ -320,6 +321,7 @@ function mergeImported(results){
  records=chosen;duplicateIds=crossIds;withinFileDuplicateIds=within;fileInfo=fileCounts;allOccurrences=results.reduce(function(n,r){return n+r.records.length},0);
 }
 function setStatus(message,kind){const el=$('statusMsg');el.className='notice'+(kind?' '+kind:'');el.textContent=message}
+function populateShopFilter(){const current=$('shopFilter').value;const shops=new Map();records.forEach(function(r){if(r.shopCode)shops.set(r.shopCode,r.shopName||r.shopCode)});$('shopFilter').innerHTML='<option value="">All shops</option>'+[...shops.entries()].sort(function(a,b){return a[1].localeCompare(b[1])}).map(function(x){return '<option value="'+esc(x[0])+'">'+esc(x[1])+'</option>'}).join('');if(current&&shops.has(current))$('shopFilter').value=current}
 function minmaxDates(){
  const ds=records.map(function(r){return r.createdAt}).filter(Boolean).sort(function(a,b){return a-b});
  if(!ds.length)return;
@@ -536,18 +538,20 @@ function applyFilters(){
  const to=$('toDate').value?new Date($('toDate').value+'T00:00:00'):null;
  if(to)to.setDate(to.getDate()+1);
  const asOf=parseDate($('asOf').value)||new Date();
- const rows=records.filter(function(r){return inRange(r,from,to)});
+ const shop=$('shopFilter').value;
+ const rows=records.filter(function(r){return inRange(r,from,to)&&(!shop||r.shopCode===shop)});
  const m=metricSet(rows,asOf);
  $('periodCaption').textContent=(from?fmtDate(from):'All dates')+' — '+(to?fmtDate(new Date(to.getTime()-86400000)):'All dates')+' · '+rows.length+' jobs';
  $('integrityBadge').textContent=withinFileDuplicateIds?'Review duplicate JS No':'Import diagnostics available';
- kpiRender(m);renderWeek(records,to?new Date(to.getTime()-86400000):new Date(),asOf);renderTrend(rows);renderDaily(records,$('dailyDate').value||dayKey(new Date()),asOf);renderDetails(rows,m,asOf);
+ kpiRender(m);renderWeek(rows,to?new Date(to.getTime()-86400000):new Date(),asOf);renderTrend(rows);renderDaily(rows,$('dailyDate').value||dayKey(new Date()),asOf);renderDetails(rows,m,asOf);
  renderTopModels(rows);renderTopParts(rows);renderInventory(rows);renderJobs(rows,asOf);renderQuality(rows,m);
  $('dashboard').classList.remove('hidden');$('welcome').classList.add('hidden');$('exportBtn').disabled=!window.XLSX||withinFileDuplicateIds>0;
 }
 function currentViewRows(){
  const from=$('fromDate').value?new Date($('fromDate').value+'T00:00:00'):null;
  const to=$('toDate').value?new Date($('toDate').value+'T00:00:00'):null;if(to)to.setDate(to.getDate()+1);
- const rows=records.filter(function(r){return inRange(r,from,to)});
+ const shop=$('shopFilter').value;
+ const rows=records.filter(function(r){return inRange(r,from,to)&&(!shop||r.shopCode===shop)});
  return getViewList(rows,parseDate($('asOf').value)||new Date());
 }
 function csvCell(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
@@ -566,7 +570,8 @@ function exportPack(){
  const wb=XLSX.utils.book_new(),asOf=parseDate($('asOf').value)||new Date();
  function sheet(name,rows){const ws=XLSX.utils.json_to_sheet(rows.length?rows:[{Message:'No data available'}]);XLSX.utils.book_append_sheet(wb,ws,name)}
  const start=$('fromDate').value?new Date($('fromDate').value+'T00:00:00'):null,end=$('toDate').value?new Date($('toDate').value+'T00:00:00'):null;if(end)end.setDate(end.getDate()+1);
- const selected=records.filter(function(r){return inRange(r,start,end)}),m=metricSet(selected,asOf);
+ const shop=$('shopFilter').value;const scopeRecords=records.filter(function(r){return !shop||r.shopCode===shop});
+ const selected=scopeRecords.filter(function(r){return inRange(r,start,end)}),m=metricSet(selected,asOf);
  sheet('Management Summary',[
  {KPI:'Total Jobs',Actual:m.total,Target:TARGET.jobs,Status:m.total>=TARGET.jobs?'Target reached':'Below target'},
  {KPI:'Warranty Jobs',Actual:m.uw,Target:'60% mix',Status:m.uwPct===null?'N/A':m.uwPct.toFixed(1)+'%'},
@@ -580,24 +585,24 @@ function exportPack(){
  {KPI:'Out-warranty RWR',Actual:m.rwr,Denominator:m.oow,Percentage:m.rwrPct},
  {KPI:'Open Jobs',Actual:m.open},{KPI:'Completed Jobs',Actual:m.done}
  ]);
- const dailyKeys=new Set();records.forEach(function(r){if(r.createdAt)dailyKeys.add(dayKey(r.createdAt));if(r.completedAt)dailyKeys.add(dayKey(r.completedAt));if(r.poDate)dailyKeys.add(dayKey(r.poDate))});
+ const dailyKeys=new Set();scopeRecords.forEach(function(r){if(r.createdAt)dailyKeys.add(dayKey(r.createdAt));if(r.completedAt)dailyKeys.add(dayKey(r.completedAt));if(r.poDate)dailyKeys.add(dayKey(r.poDate))});
  const daily=[...dailyKeys].sort().map(function(k){
   const d=new Date(k+'T00:00:00'),e=new Date(d);e.setDate(e.getDate()+1);
-  const newJobs=records.filter(function(r){return r.createdAt&&r.createdAt>=d&&r.createdAt<e});
-  const completed=records.filter(function(r){return r.completedAt&&r.completedAt>=d&&r.completedAt<e});
-  const pos=records.filter(function(r){return r.poDate&&r.poDate>=d&&r.poDate<e});
+  const newJobs=scopeRecords.filter(function(r){return r.createdAt&&r.createdAt>=d&&r.createdAt<e});
+  const completed=scopeRecords.filter(function(r){return r.completedAt&&r.completedAt>=d&&r.completedAt<e});
+  const pos=scopeRecords.filter(function(r){return r.poDate&&r.poDate>=d&&r.poDate<e});
   const oldPo=completed.filter(function(r){return r.poDate&&r.poDate<d});
   const revenue=newJobs.filter(function(r){return TBISImporter.norm(r.warranty)==='out warranty'}).reduce(function(s,r){return s+r.receivedAmount},0);
   return {Date:k,NewJobs:newJobs.length,RepairsCompleted:completed.length,NewPOJobs:pos.length,OldPOJobsRepaired:oldPo.length,OutWarrantyRevenuePKR:revenue};
  });
  sheet('Daily Operations',daily);
- const weekMap=groupRows(records,function(r){return r.createdAt?weekStart(r.createdAt):''});
+ const weekMap=groupRows(scopeRecords,function(r){return r.createdAt?weekStart(r.createdAt):''});
  const weekly=[...weekMap.entries()].sort(function(a,b){return a[0].localeCompare(b[0])}).map(function(x){const z=metricSet(x[1],asOf);return {WeekStarting:x[0],Jobs:z.total,WarrantyJobs:z.uw,OutWarrantyJobs:z.oow,OutWarrantyRevenuePKR:z.revenue,OneHourProxyPct:z.onePct,TwoHourPOPct:z.twoPct,POJobs:z.po,PoRatePct:z.poRate,NoPO24:z.noPo24,ThreeDayTATPct:z.threePct}});
  sheet('Weekly Summary',weekly);
  const weeklyTopModels=[],weeklyTopParts=[];
  weekMap.forEach(function(group,week){groupCount(group,function(r){return r.model}).slice(0,7).forEach(function(x,i){weeklyTopModels.push({WeekStarting:week,Rank:i+1,Model:x[0],Jobs:x[1]})});const partCounts=new Map();group.forEach(function(r){r.consumed.forEach(function(p){const key=(p.code||'')+'|'+(p.desc||'Unknown');partCounts.set(key,(partCounts.get(key)||0)+p.qty)})});[...partCounts.entries()].sort(function(a,b){return b[1]-a[1]}).slice(0,7).forEach(function(x,i){weeklyTopParts.push({WeekStarting:week,Rank:i+1,Part:x[0].split('|')[1],MaterialCode:x[0].split('|')[0],ConsumedQty:x[1]})})});
  sheet('Weekly Top Models',weeklyTopModels);sheet('Weekly Top Parts',weeklyTopParts);
- const monthMap=groupRows(records,function(r){return r.createdAt?r.createdAt.getFullYear()+'-'+String(r.createdAt.getMonth()+1).padStart(2,'0'):''});
+ const monthMap=groupRows(scopeRecords,function(r){return r.createdAt?r.createdAt.getFullYear()+'-'+String(r.createdAt.getMonth()+1).padStart(2,'0'):''});
  const monthly=[...monthMap.entries()].sort(function(a,b){return a[0].localeCompare(b[0])}).map(function(x){const z=metricSet(x[1],asOf);return {Month:x[0],Jobs:z.total,WarrantyJobs:z.uw,WarrantyPct:z.uwPct,OutWarrantyJobs:z.oow,OutWarrantyPct:z.oowPct,OutWarrantyRevenuePKR:z.revenue,OneHourProxyPct:z.onePct,TwoHourPOPct:z.twoPct,POJobs:z.po,PoRatePct:z.poRate,NoPO24:z.noPo24,ThreeDayTATPct:z.threePct,RWRJobs:z.rwr}});
  sheet('Monthly Summary',monthly);
  const poRows=selected.filter(function(r){return r.hasPO});
@@ -628,7 +633,7 @@ async function loadCrmFiles(files){
   for(let i=0;i<sorted.length;i++){
    const file=sorted[i],table=await readTable(file),parsed=makeFileRecords(file,table,i);results.push(parsed);
   }
-  mergeImported(results);minmaxDates();
+  mergeImported(results);populateShopFilter();minmaxDates();
   const metaText=fileInfo.map(function(x){return x.name+': '+x.rows+' JS rows · '+x.unique+' unique · '+x.duplicates+' repeated · '+x.kind.toUpperCase()+(x.kind==='text'&&x.delimiter?' · separator '+(x.delimiter==='\t'?'TAB':x.delimiter):x.kind!=='text'&&x.sheet?' · sheet '+x.sheet:'')+' · '+x.columns+' columns'}).join(' | ');
   $('fileMeta').textContent=metaText+' · Total source occurrences: '+allOccurrences+' · consolidated rows: '+records.length+' · repeated JS numbers across reports: '+duplicateIds+' · within-file duplicate rows: '+withinFileDuplicateIds+'.';
   const warnings=[];
@@ -676,7 +681,8 @@ $('stockBtn').onclick=function(){$('stockFile').click()};
 $('stockFile').addEventListener('change',function(e){const f=e.target.files[0];if(f)loadStock(f).catch(function(err){setStatus('Inventory import failed: '+err.message,'error')});e.target.value=''});
 $('exportBtn').onclick=exportPack;$('csvBtn').onclick=downloadCsv;
 ['fromDate','toDate','dailyDate','asOf','jobView','jobSearch'].forEach(function(id){$(id).addEventListener(id==='jobSearch'?'input':'change',applyFilters)});
-$('resetDates').onclick=resetDates;
+$('resetDates').onclick=function(){$('shopFilter').value='';resetDates()};
+$('shopFilter').addEventListener('change',applyFilters);
 document.querySelectorAll('[data-scroll]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-scroll]').forEach(function(x){x.classList.toggle('active',x===b)});const target=$(b.dataset.scroll);if(target)target.scrollIntoView({behavior:'smooth',block:'start'})})});
 $('asOf').value=localInput(new Date());
 })();
