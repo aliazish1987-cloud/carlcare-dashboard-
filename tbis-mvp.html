@@ -22,7 +22,7 @@
  <section class="hero"><div><div class="eyebrow">BRANCH PERFORMANCE CENTRE</div><h1>Branch Intelligence</h1><p>One clear view of jobs, turnaround, parts pressure, revenue and service quality.</p></div><div class="hero-actions"><button id="pack" class="btn" disabled>↓ &nbsp; Download management pack</button><button id="clear" class="btn secondary">Clear reports</button></div></section>
  <section class="panel upload">
   <div class="uploadhead"><div><h2>Import CRM reports</h2><p>Upload one report or combine multiple non-overlapping daily / weekly / monthly exports.</p></div><span class="tag">PRIVATE · BROWSER ONLY</span></div>
-  <div class="drop" id="drop"><div class="dropicon">↑</div><div class="droptext"><strong>Drop your CRM report files here or <b>browse files</b></strong><p>CSV · TSV · TXT · XLS · XLSX · The system checks the file contents, not just the filename. Multiple files are combined; duplicate JS No values are always reported, never silently removed.</p></div><button class="btn ghost" id="browse" type="button">Choose reports</button><input class="fileinput" id="files" type="file" multiple accept=".csv,.tsv,.txt,.xls,.xlsx"></div>
+  <div class="drop" id="drop"><div class="dropicon">↑</div><div class="droptext"><strong>Drop your CRM report files here or <b>browse files</b></strong><p>CSV · TSV · TXT · XLS · XLSX · File contents are checked, not just the filename. Multiple CRM reports can be combined; duplicate JS No values are always reported. XLS/XLSX reading uses SheetJS from cdn.sheetjs.com, so an internet connection is needed for Excel files. Report data is processed in this browser and is not uploaded.</p></div><button class="btn ghost" id="browse" type="button">Choose reports</button><input class="fileinput" id="files" type="file" multiple accept=".csv,.tsv,.txt,.xls,.xlsx"></div>
   <div class="importmeta"><div class="metaText" id="filemeta">No report loaded yet. Your CRM file stays on this device.</div><div class="metaText" id="schemaMeta"></div></div>
   <div class="msg error" id="err" role="alert"></div><div class="msg warning" id="warn" role="status"></div><div class="msg success" id="ok" role="status"></div>
  </section>
@@ -292,7 +292,9 @@ function compute(){
  const rwr=all.filter(r=>compact(r.service)==="rwr");
  const owAmount=outWarranty.reduce((s,r)=>s+r.amount,0);
  const received=outWarranty.reduce((s,r)=>s+r.received,0);
- const bounce=calcBounce(all);
+ const bounceHistory=calcBounce(activityRecords);
+ const bounceEvents=bounceHistory.events.filter(e=>e.createdAt&&(!from||e.createdAt>=from)&&(!to||e.createdAt<=to));
+ const bounce={pairs:bounceEvents.length,same:bounceEvents.filter(e=>e.classification==="same").length,different:bounceEvents.filter(e=>e.classification==="different").length,unknown:bounceEvents.filter(e=>e.classification==="unknown").length,events:bounceEvents};
  const policyScope=all.filter(r=>["swap","dap","doa"].includes(compact(r.service)));
  const policy=policyScope.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0);
  const within7=policy.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);
@@ -309,9 +311,9 @@ function compute(){
 function calcBounce(list){
  const groups=new Map();
  list.forEach(r=>{if(!r.deviceKey)return;if(!groups.has(r.deviceKey))groups.set(r.deviceKey,[]);groups.get(r.deviceKey).push(r)});
- let pairs=0,same=0,different=0,unknown=0;
- groups.forEach(g=>{g.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));for(let i=1;i<g.length;i++){const prev=g[i-1],cur=g[i];if(prev.returnAt&&cur.createdAt){const days=(cur.createdAt-prev.returnAt)/86400000;if(days>=0&&days<=30){pairs++;if(prev.faultSig&&cur.faultSig){if(prev.faultSig===cur.faultSig)same++;else different++}else unknown++}}}});
- return {pairs,same,different,unknown};
+ let pairs=0,same=0,different=0,unknown=0;const events=[];
+ groups.forEach(g=>{g.sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));for(let i=1;i<g.length;i++){const prev=g[i-1],cur=g[i];if(prev.returnAt&&cur.createdAt){const days=(cur.createdAt-prev.returnAt)/86400000;if(days>=0&&days<=30){pairs++;const classification=prev.faultSig&&cur.faultSig?(prev.faultSig===cur.faultSig?"same":"different"):"unknown";if(classification==="same")same++;else if(classification==="different")different++;else unknown++;events.push({createdAt:cur.createdAt,classification})}}}});
+ return {pairs,same,different,unknown,events};
 }
 function groupBy(list,keyFn){const map=new Map();list.forEach(r=>{const k=keyFn(r);if(!k)return;if(!map.has(k))map.set(k,[]);map.get(k).push(r)});return map}
 function kpi(title,value,sub,icon,state,tag){return '<article class="panel kpi '+(state||"")+'"><div class="kpitop"><span>'+esc(title)+'</span><span class="kpiicon">'+icon+'</span></div><div class="value">'+esc(value)+'</div><div class="sub">'+sub+(tag?'<br><span class="tag '+(state==="bad"?"bad":state==="warn"?"warn":"")+'">'+esc(tag)+'</span>':"")+'</div></article>'}
@@ -351,26 +353,30 @@ function poTypeRows(list){
  const c=new Map();list.filter(r=>r.hasPO).forEach(r=>{const k=compact(r.service);c.set(k,(c.get(k)||0)+1)});
  return [...c.entries()].sort((a,b)=>b[1]-a[1]).map(([k,n])=>({name:names[k]||"PO "+k.toUpperCase(),detail:"Service category",value:n+" jobs"}));
 }
-function weekRows(list){
+function weekRows(list,bounceEvents=[]){
  const groups=groupBy(list,r=>{if(!r.createdAt)return"";const d=new Date(r.createdAt.getFullYear(),r.createdAt.getMonth(),r.createdAt.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return localKey(d)});
  return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([wk,jobs])=>{
   const ow=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
   const one=jobs.filter(r=>r.oneMeasured),two=jobs.filter(r=>r.twoMeasured),three=jobs.filter(r=>r.threeMeasured),timed=jobs.filter(r=>r.duration!==null);
-  const po=jobs.filter(r=>r.hasPO).length,bounce=calcBounce(jobs).pairs;
+  const po=jobs.filter(r=>r.hasPO).length;
+  const weekStart=new Date(wk+"T00:00:00"),weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+7);
+  const bounce=bounceEvents.filter(e=>e.createdAt>=weekStart&&e.createdAt<weekEnd).length;
   const avgTat=timed.length?timed.reduce((s,r)=>s+r.duration,0)/timed.length:null;
   return {week:wk,jobs:jobs.length,ow:ow.reduce((s,r)=>s+r.amount,0),poPct:percent(po,jobs.length),
    onePct:percent(one.filter(r=>r.onePass).length,one.length),twoPct:percent(two.filter(r=>r.twoPass).length,two.length),
    threePct:percent(three.filter(r=>r.threePass).length,three.length),bounce,avgTat};
  });
 }
-function monthRows(list){
+function monthRows(list,bounceEvents=[]){
  const groups=groupBy(list,r=>r.createdAt?r.createdAt.getFullYear()+"-"+String(r.createdAt.getMonth()+1).padStart(2,"0"):"");
  return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([mo,jobs])=>{
   const w=jobs.filter(r=>r.warranty.toLowerCase().includes("under warranty")).length;
   const o=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
   const po=jobs.filter(r=>r.hasPO).length,rwr=jobs.filter(r=>compact(r.service)==="rwr").length;
   const one=jobs.filter(r=>r.oneMeasured),two=jobs.filter(r=>r.twoMeasured),three=jobs.filter(r=>r.threeMeasured),timed=jobs.filter(r=>r.duration!==null);
-  const avgTat=timed.length?timed.reduce((s,r)=>s+r.duration,0)/timed.length:null,bounce=calcBounce(jobs).pairs;
+  const avgTat=timed.length?timed.reduce((s,r)=>s+r.duration,0)/timed.length:null;
+  const monthStart=new Date(mo+"-01T00:00:00"),monthEnd=new Date(monthStart);monthEnd.setMonth(monthEnd.getMonth()+1);
+  const bounce=bounceEvents.filter(e=>e.createdAt>=monthStart&&e.createdAt<monthEnd).length;
   return {month:mo,jobs:jobs.length,warranty:w,ow:o.reduce((s,r)=>s+r.amount,0),poPct:percent(po,jobs.length),
    warrantyPct:percent(w,jobs.length),rwr,onePct:percent(one.filter(r=>r.onePass).length,one.length),
    twoPct:percent(two.filter(r=>r.twoPass).length,two.length),threePct:percent(three.filter(r=>r.threePass).length,three.length),
@@ -404,7 +410,6 @@ function render(){
   kpi("Bounce candidates",c.bounce.pairs+" jobs",percent(c.bounce.pairs,c.total)+" within uploaded history · target 0.92%","↻",c.bounce.pairs/c.total>.0092?"bad":"good","History may be incomplete"),
   kpi("Customer satisfaction","Needs report","No customer survey / call-centre results in this CRM export","☆","na","Not calculable")
  ].join("");
- const daily=dailySummaries(all);
  const daily=dailySummaries(all);drawBars(daily);
  const sourceCounts=new Map();all.forEach(r=>{const n=r.source||"Unknown";sourceCounts.set(n,(sourceCounts.get(n)||0)+1)});
  const totalSources=Math.max(1,all.length);
@@ -414,9 +419,9 @@ function render(){
  $("models").innerHTML=rankRows(topModels(all));
  $("parts").innerHTML=rankRows(topParts(all));
  $("poBreakdown").innerHTML=rankRows(poTypeRows(all));
- const weeks=weekRows(all);
+ const weeks=weekRows(all,c.bounce.events);
  $("weekly").innerHTML=weeks.length?weeks.map((w,i)=>{const prev=weeks[i-1];const delta=prev?w.jobs-prev.jobs:null;const pctDelta=(now,before)=>{const n=parseFloat(now),p=parseFloat(before);return Number.isFinite(n)&&Number.isFinite(p)?(n-p>0?"+":"")+(n-p).toFixed(1)+" pp":"—"};return "<tr><td>"+w.week+"</td><td>"+w.jobs+(delta===null?"":' <span style="color:'+(delta>=0?"#18815c":"#b33e4a")+'">'+(delta>=0?"+":"")+delta+"</span>")+"</td><td>"+money(w.ow)+"</td><td>"+w.poPct+"</td><td>"+w.onePct+(prev?' <small>('+pctDelta(w.onePct,prev.onePct)+')</small>':'')+"</td><td>"+w.twoPct+(prev?' <small>('+pctDelta(w.twoPct,prev.twoPct)+')</small>':'')+"</td><td>"+w.threePct+"</td><td>"+w.bounce+" ("+percent(w.bounce,w.jobs)+")</td><td>"+minsText(w.avgTat??NaN)+"</td><td>Not loaded</td></tr>"}).join(""):'<tr><td colspan="10">No weekly data</td></tr>';
- const months=monthRows(all);
+ const months=monthRows(all,c.bounce.events);
  $("monthly").innerHTML=months.length?months.map(m=>"<tr><td>"+m.month+"</td><td>"+m.jobs+" / "+num($("jobtarget").value)+" ("+percent(m.jobs,num($("jobtarget").value))+")</td><td>"+m.warrantyPct+"</td><td>"+money(m.ow)+"</td><td>"+m.poPct+"</td><td>"+m.onePct+"</td><td>"+m.twoPct+"</td><td>"+m.threePct+"</td><td>"+m.rwr+"</td><td>"+m.bounce+" ("+percent(m.bounce,m.jobs)+")</td><td>"+minsText(m.avgTat??NaN)+"</td><td>Not loaded</td></tr>").join(""):'<tr><td colspan="12">No monthly data</td></tr>';
  const lastDate=daily.length?daily[daily.length-1].date:"";
  const policyByType={};c.policyScope.forEach(r=>{const t=r.service.toUpperCase();if(!policyByType[t])policyByType[t]={all:0,known:0,within:0};policyByType[t].all++;if(r.activationAt&&r.createdAt){const d=(r.createdAt-r.activationAt)/86400000;if(d>=0){policyByType[t].known++;if(d<=7)policyByType[t].within++}}});
@@ -520,8 +525,8 @@ function buildPack(){
  ];
  add("Management Summary",summary);
  add("Daily Activity",[["Event date","New jobs","Repairs completed","Jobs returned","New PO/AP","Old PO jobs repaired","Old PO jobs returned"],...dailyActivity(c.activityRecords,c.from,c.to).map(x=>[x.date,x.newJobs,x.repaired,x.returned,x.newPO,x.oldPORepair,x.oldPOReturn])]);
- add("Weekly",[["Week starts","Jobs","Out Warranty Total Amt (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...weekRows(c.all).map(x=>[x.week,x.jobs,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
- add("Monthly",[["Month","Jobs","Monthly job target progress","Warranty %","Out-warranty amount (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","RWR jobs","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...monthRows(c.all).map(x=>[x.month,x.jobs,percent(x.jobs,num($("jobtarget").value)),x.warrantyPct,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.rwr,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
+ add("Weekly",[["Week starts","Jobs","Out Warranty Total Amt (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...weekRows(c.all,c.bounce.events).map(x=>[x.week,x.jobs,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
+ add("Monthly",[["Month","Jobs","Monthly job target progress","Warranty %","Out-warranty amount (PKR)","PO rate","1H rate","2H PO compliance","3-day TAT","RWR jobs","Bounce count","Bounce rate","Average repair TAT minutes","Customer satisfaction"],...monthRows(c.all,c.bounce.events).map(x=>[x.month,x.jobs,percent(x.jobs,num($("jobtarget").value)),x.warrantyPct,x.ow,x.poPct,x.onePct,x.twoPct,x.threePct,x.rwr,x.bounce,percent(x.bounce,x.jobs),x.avgTat,"Not loaded"])]);
  add("Top Models",[["Rank","Model","Brand","Jobs"],...topModels(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
  add("Top Parts",[["Rank","Part code / description","Jobs / details","Quantity"],...topParts(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
  add("Engineer Summary",[["Engineer label","Workload / average TAT","Within-1-hour rate"],...topEngineers(c.all).map(x=>[x.name,x.detail,x.value])]);
