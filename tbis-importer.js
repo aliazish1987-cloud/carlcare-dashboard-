@@ -84,4 +84,5 @@ function parseBytes(input){
  return {rows:best.rows,header:best.header,headerIndex:best.headerIndex,encoding:best.encoding,delimiter:best.delimiter,columns:best.header.length,rowCount:ids.length,uniqueCount:unique.size,duplicateCount:ids.length-unique.size,physicalDataRows:best.rows.length-best.headerIndex-1,required:{jsNo:true,createdOn:true}};
 }
 root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes};
+if(typeof module!=='undefined'&&module.exports)module.exports=root.TBISImporter;
 })(typeof window!=='undefined'?window:globalThis);
