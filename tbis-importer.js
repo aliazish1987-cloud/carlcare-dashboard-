@@ -53,6 +53,7 @@ function parseDelimited(text,delimiter){
  if(field.length||row.length){row.push(field);if(row.some(v=>clean(v)))rows.push(row)}
  return rows;
 }
+function validateExtension(name){const ext=String(name||'').split('.').pop().toLowerCase();if(!['csv','tsv','txt','xls','xlsx'].includes(ext))throw new Error('Unsupported file format. Choose CSV, TSV, TXT, XLS, or XLSX.');return ext}
 function parseBytes(input){
  const bytes=input instanceof Uint8Array?input:new Uint8Array(input);
  if(!bytes.length)throw new Error('Selected file is empty.');
@@ -83,6 +84,6 @@ function parseBytes(input){
  const unique=new Set(ids);
  return {rows:best.rows,header:best.header,headerIndex:best.headerIndex,encoding:best.encoding,delimiter:best.delimiter,columns:best.header.length,rowCount:ids.length,uniqueCount:unique.size,duplicateCount:ids.length-unique.size,physicalDataRows:best.rows.length-best.headerIndex-1,required:{jsNo:true,createdOn:true}};
 }
-root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes};
+root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes,validateExtension};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.TBISImporter;
 })(typeof window!=='undefined'?window:globalThis);
