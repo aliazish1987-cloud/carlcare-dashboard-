@@ -496,7 +496,7 @@ function renderQuality(rows,m){
  const invalid=rows.filter(function(r){return r.createdAt&&r.completedAt&&r.completedAt<r.createdAt}).length;
  const noPODate=rows.filter(function(r){return r.hasPO&&!r.poDate}).length;
  const ids=rows.map(function(r){return r.job}),unique=new Set(ids);
- const warrantyCheck=rows.filter(function(r){return ['under warranty','out warranty'].indexOf(TBISImporter.norm(r.warranty))>=0).length;
+ const warrantyCheck=rows.filter(function(r){return ['under warranty','out warranty'].indexOf(TBISImporter.norm(r.warranty))>=0}).length;
  const reconciliation=rows.length===warrantyCheck;
  const items=[
  ['Rows in selected analysis',rows.length,'Canonical rows after transparent snapshot-overlap handling'],
