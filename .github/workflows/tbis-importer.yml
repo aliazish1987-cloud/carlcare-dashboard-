@@ -13,3 +13,13 @@ jobs:
         with:
           node-version: 20
       - run: node --test tests/tbis-importer.test.cjs
+      - name: Check inline dashboard JavaScript syntax
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('tbis-mvp.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>([\\s\\S]*?)</script>', html)
+          Path('/tmp/tbis-inline.js').write_text('\\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/tbis-inline.js
