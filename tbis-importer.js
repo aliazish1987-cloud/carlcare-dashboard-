@@ -53,6 +53,7 @@ function parseDelimited(text,delimiter){
  if(field.length||row.length){row.push(field);if(row.some(v=>clean(v)))rows.push(row)}
  return rows;
 }
+function detectFileKind(input,name=''){const b=input instanceof Uint8Array?input:new Uint8Array(input);if(b.length>=4&&b[0]===0x50&&b[1]===0x4B&&([0x03,0x05,0x07].includes(b[2])))return 'xlsx';if(b.length>=8&&b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0&&b[4]===0xA1&&b[5]===0xB1&&b[6]===0x1A&&b[7]===0xE1)return 'xls';validateExtension(name||'report.csv');return 'text'}
 function validateExtension(name){const ext=String(name||'').split('.').pop().toLowerCase();if(!['csv','tsv','txt','xls','xlsx'].includes(ext))throw new Error('Unsupported file format. Choose CSV, TSV, TXT, XLS, or XLSX.');return ext}
 function parseBytes(input){
  const bytes=input instanceof Uint8Array?input:new Uint8Array(input);
@@ -84,6 +85,6 @@ function parseBytes(input){
  const unique=new Set(ids);
  return {rows:best.rows,header:best.header,headerIndex:best.headerIndex,encoding:best.encoding,delimiter:best.delimiter,columns:best.header.length,rowCount:ids.length,uniqueCount:unique.size,duplicateCount:ids.length-unique.size,physicalDataRows:best.rows.length-best.headerIndex-1,required:{jsNo:true,createdOn:true}};
 }
-root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes,validateExtension};
+root.TBISImporter={clean,norm,compact,columnIndex,validHeader,parseDelimited,parseBytes,validateExtension,detectFileKind};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.TBISImporter;
 })(typeof window!=='undefined'?window:globalThis);
