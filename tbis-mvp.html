@@ -292,6 +292,11 @@ function rankRows(items,type){
 }
 function dateRangeLabel(c){if(c.from&&c.to)return c.from.toLocaleDateString("en-GB")+" – "+c.to.toLocaleDateString("en-GB");return "All available dates"}
 function populateShops(){const map=new Map();records.forEach(r=>{if(r.shop)map.set(r.shop,r.shopName||r.shop)});const items=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));$("shopFilter").innerHTML='<option value="">All branches</option>'+items.map(([code,name])=>'<option value="'+esc(code)+'">'+esc(code+" · "+name)+"</option>").join("");if(items.length===1)$("shopFilter").value=items[0][0]}
+function dailyActivity(list){
+ const keys=new Set();list.forEach(r=>[r.createdAt,r.completedAt,r.returnAt,r.poDate].forEach(d=>{if(d)keys.add(localKey(d))}));
+ const days=[...keys].sort();const same=(d,k)=>d&&localKey(d)===k;
+ return days.map(k=>{const created=list.filter(r=>same(r.createdAt,k));const repaired=list.filter(r=>same(r.completedAt,k));const returned=list.filter(r=>same(r.returnAt,k)&&["returned","swapcertification"].includes(compact(r.status)));const newPO=list.filter(r=>same(r.poDate,k));const oldPORepair=repaired.filter(r=>r.poDate&&localKey(r.poDate)<k);const oldPOReturn=returned.filter(r=>r.poDate&&localKey(r.poDate)<k);return {date:k,newJobs:created.length,repaired:repaired.length,returned:returned.length,newPO:newPO.length,oldPORepair:oldPORepair.length,oldPOReturn:oldPOReturn.length}});
+}
 function dailySummaries(list){
  const map=new Map();
  list.forEach(r=>{if(!r.createdAt)return;const k=localKey(r.createdAt);if(!map.has(k))map.set(k,[]);map.get(k).push(r)});
@@ -343,6 +348,7 @@ function render(){
   kpi("NOPO ≥24 hours",c.noPO.length+" jobs",c.open.length+" open jobs · target is zero NOPO jobs","!",c.noPO.length?"bad":"good",c.noPO.length?"Action required":"Target achieved"),
   kpi("3-day close after PO",percent(c.threePass.length,c.threeKnown.length),c.threePass.length+" within / "+c.threeKnown.length+" measurable · "+(c.threeKnown.length-c.threePass.length)+" late","◴",c.threePass.length/c.threeKnown.length>=.97?"good":"warn","Start-point needs approval"),
   kpi("RWR jobs",c.rwr.length+" jobs",percent(c.rwr.length,c.outWarranty.length)+" of out-warranty jobs · "+c.rwr.filter(r=>r.warranty.toLowerCase().includes("out warranty")).length+" are out warranty","↩","warn","Review RWR causes"),
+  kpi("7-day SWAP / DAP / DOA",c.within7.length+" eligible",c.within7.length+" within 7 days / "+c.policy.length+" with valid activation dates · "+(c.policyScope.length-c.policy.length)+" missing / invalid","7","","Activation evidence"),
   kpi("RFD older than 2 days",c.rfdOver.length+" jobs",c.rfd.length+" ready for delivery · "+c.rfdOver.length+" beyond preferred return time","▣",c.rfdOver.length?"bad":"good","Return follow-up"),
   kpi("Bounce candidates",c.bounce.pairs+" jobs",percent(c.bounce.pairs,c.total)+" within uploaded history · target 0.92%","↻",c.bounce.pairs/c.total>.0092?"bad":"good","History may be incomplete"),
   kpi("Customer satisfaction","Needs report","No customer survey / call-centre results in this CRM export","☆","na","Not calculable")
@@ -460,12 +466,14 @@ function buildPack(){
  ["Data integrity","No duplicates","No duplicates permitted","Rows are never silently deduplicated"]
  ];
  add("Management Summary",summary);
- const daily=dailySummaries(c.all);
- add("Daily",[["Date","New Jobs"],...daily.map(x=>[x.date,x.jobs])]);
- add("Weekly",[["Week starts","Jobs","Out Warranty Total Amt (PKR)","PO Jobs","1H Within / Measured","1H Rate"],...weekRows(c.all).map(x=>[x.week,x.jobs,x.ow,x.po,x.one,x.onePct])]);
- add("Monthly",[["Month","Jobs","Warranty jobs","Out-warranty amount (PKR)","PO rate"],...monthRows(c.all).map(x=>[x.month,x.jobs,x.warranty,x.ow,x.poPct])]);
+ add("Daily Activity",[["Event date","New jobs","Repairs completed","Jobs returned","New PO/AP","Old PO jobs repaired","Old PO jobs returned"],...dailyActivity(c.all).map(x=>[x.date,x.newJobs,x.repaired,x.returned,x.newPO,x.oldPORepair,x.oldPOReturn])]);
+ add("Weekly",[["Week starts","Jobs","Out Warranty Total Amt (PKR)","PO rate","1H rate","3-day rate","Bounce signals in week"],...weekRows(c.all).map(x=>[x.week,x.jobs,x.ow,x.poPct,x.onePct,x.threePct,x.bounce])]);
+ add("Monthly",[["Month","Jobs","Warranty %","Out-warranty amount (PKR)","PO rate","RWR jobs"],...monthRows(c.all).map(x=>[x.month,x.jobs,x.warrantyPct,x.ow,x.poPct,x.rwr])]);
  add("Top Models",[["Rank","Model","Brand","Jobs"],...topModels(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
  add("Top Parts",[["Rank","Part code / description","Jobs / details","Quantity"],...topParts(c.all).map((x,i)=>[i+1,x.name,x.detail,x.value])]);
+ add("Engineer Summary",[["Engineer label","Workload / average TAT","Within-1-hour rate"],...topEngineers(c.all).map(x=>[x.name,x.detail,x.value])]);
+ add("7-Day Policy",[["Service type","Jobs in category","Valid activation dates","Received within 7 days","Missing / invalid dates"],...["SWAP","DAP","DOA"].map(t=>{const g=c.policyScope.filter(r=>r.service.toUpperCase()===t),valid=g.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0),within=valid.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);return [t,g.length,valid.length,within.length,g.length-valid.length]})]);
+ add("Inventory Readiness",[["Control","Status / count"],["Stock-on-hand reconciliation","Not available: upload branch inventory report"],["PO jobs",c.po.length],["Avoidable PO conclusion","Not calculated without a stock snapshot and matching material codes"]]);
  add("PO Breakdown",[["PO type","Jobs"],...poTypeRows(c.all).map(x=>[x.name,x.value])]);
  add("Data Quality",[["Check","Result"],["Imported rows",records.length],["Unique JS No",new Set(records.map(r=>r.job)).size],["Duplicate JS No",records.length-new Set(records.map(r=>r.job)).size],["Rows with invalid Created On",c.invalidCreated],["Rows with missing/invalid completion timestamp",c.invalidCompletion],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")],["Source files",fileMetas.map(f=>f.name).join(" | ")],["Important note","No customer names, contact numbers, device identifiers or technician names are included."]]);
  add("Exceptions",[["JS No","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Duration / age","PO/AP found","Status"],...currentExceptions.map(r=>[r.job,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status])]);
