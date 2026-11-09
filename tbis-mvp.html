@@ -329,6 +329,7 @@ function isDone(r){return !!r.completedAt||['returned','closed','repair complete
 function isOneHourEligible(r){return compact(r.category)==='sp'&&['carryin','online','onlinereservation'].indexOf(compact(r.source))>=0&&r.shortage==='no'}
 function turn(r){if(!r.createdAt||!r.completedAt)return null;const m=(r.completedAt-r.createdAt)/60000;return m<0?null:m}
 function poMins(r){if(!r.createdAt||!r.poDate)return null;const m=(r.poDate-r.createdAt)/60000;return m<0?null:m}
+function noPoWithin24Violation(r,asOf){if(!r.createdAt||!asOf)return false;const due=r.createdAt.getTime()+86400000;if(asOf.getTime()<due)return false;if(r.poDate&&r.poDate.getTime()<=due)return false;if(r.completedAt&&r.completedAt.getTime()<=due)return false;if(r.poDate&&r.poDate.getTime()>due)return true;if(r.completedAt&&r.completedAt.getTime()>due)return true;return !r.hasPO&&!isDone(r)}
 function inRange(r,start,end){if(!r.createdAt)return false;return (!start||r.createdAt>=start)&&(!end||r.createdAt<end)}
 function metricSet(rows,asOf){
  const total=rows.length,done=rows.filter(isDone),open=rows.filter(function(r){return !isDone(r)});
@@ -349,7 +350,8 @@ function metricSet(rows,asOf){
  const threeOn=threeMeasured.filter(function(r){return turn(r)<=4320}).length;
  const threeLate=threeMeasured.length-threeOn;
  const threeUnknown=twoOnRows.length-threeMeasured.length;
- const noPo24=open.filter(function(r){return !r.hasPO&&r.createdAt&&asOf&&asOf-r.createdAt>=24*3600000});
+ const noPo24=rows.filter(function(r){return noPoWithin24Violation(r,asOf)});
+ const noPoUnknown=rows.filter(function(r){return r.createdAt&&asOf&&asOf-r.createdAt>=86400000&&!r.poDate&&!r.completedAt&&(r.hasPO||isDone(r))}).length;
  const repairOver=open.filter(function(r){return one.indexOf(r)>=0&&r.createdAt&&asOf&&asOf-r.createdAt>=3600000});
  const late=rows.filter(function(r){const m=turn(r);return m!==null&&m>60});
  const onTime=rows.filter(function(r){const m=turn(r);return m!==null&&m<=60});
@@ -357,7 +359,7 @@ function metricSet(rows,asOf){
  const threeDayDone=threeOn+threeLate;
  const activation=rows.filter(function(r){if(!r.activationAt||!r.createdAt)return false;const d=(r.createdAt-r.activationAt)/86400000;return d>=0&&d<=7});
  const deliveryYes=rows.filter(function(r){return r.deliveryFlag==='yes'}).length;
- return {total:total,done:done.length,open:open.length,uw:uw,oow:oow.length,uwPct:percent(uw,total),oowPct:percent(oow.length,total),po:po.length,poRate:percent(po.length,total),revenue:outRevenue,rwr:rwr,rwrPct:percent(rwr,oow.length),oneTotal:one.length,oneKnown:oneKnown.length,oneOn:oneOn,oneLate:oneKnown.length-oneOn,oneUnknown:one.length-oneKnown.length,onePct:percent(oneOn,oneKnown.length),twoTotal:two.length,twoOn:twoOn,twoLate:twoLate,twoUnknown:twoUnknown,twoPct:percent(twoOn,two.length),threeTotal:threeMeasured.length,threeOn:threeOn,threeLate:threeLate,threeUnknown:threeUnknown,threePct:percent(threeOn,threeMeasured.length),noPo24:noPo24.length,repairOver:repairOver.length,late:late.length,onTime:onTime.length,invalid:invalid.length,activation:activation,deliveryYes:deliveryYes};
+ return {total:total,done:done.length,open:open.length,uw:uw,oow:oow.length,uwPct:percent(uw,total),oowPct:percent(oow.length,total),po:po.length,poRate:percent(po.length,total),revenue:outRevenue,rwr:rwr,rwrPct:percent(rwr,oow.length),oneTotal:one.length,oneKnown:oneKnown.length,oneOn:oneOn,oneLate:oneKnown.length-oneOn,oneUnknown:one.length-oneKnown.length,onePct:percent(oneOn,oneKnown.length),twoTotal:two.length,twoOn:twoOn,twoLate:twoLate,twoUnknown:twoUnknown,twoPct:percent(twoOn,two.length),threeTotal:threeMeasured.length,threeOn:threeOn,threeLate:threeLate,threeUnknown:threeUnknown,threePct:percent(threeOn,threeMeasured.length),noPo24:noPo24.length,noPoUnknown:noPoUnknown,repairOver:repairOver.length,late:late.length,onTime:onTime.length,invalid:invalid.length,activation:activation,deliveryYes:deliveryYes};
 }
 function card(name,value,detail,target,kind){
  return '<article class="kpi '+(kind||'')+'"><div class="name">'+esc(name)+'</div><div class="value">'+value+'</div><div class="detail">'+esc(detail)+'</div><div class="target">'+esc(target||'')+'</div></article>';
@@ -369,7 +371,7 @@ function kpiRender(m){
  card('1-hour KPI · stock proxy',m.onePct===null?'N/A':m.onePct.toFixed(1)+'%',m.oneOn+' within 1h · '+m.oneKnown+' measurable · '+m.oneUnknown+' unknown','Target: 97.50% · parts availability not verified',m.onePct!==null&&m.onePct>=TARGET.oneHour?'good':'bad'),
  card('2-hour PO KPI',m.twoPct===null?'N/A':m.twoPct.toFixed(1)+'%',m.twoOn+' within 2h · '+m.twoLate+' late · '+m.twoUnknown+' unverified','Target: 97% · SP shortage cases',m.twoPct!==null&&m.twoPct>=TARGET.twoHour?'good':'bad'),
  card('PO rate',m.poRate===null?'N/A':m.poRate.toFixed(1)+'%',m.po+' jobs have at least one PO/AP field','Lower is better · no fixed threshold',m.poRate!==null&&m.poRate<25?'good':'warn'),
- card('NOPO · 24 hours',m.noPo24.toLocaleString(),m.open+' open jobs in selected period','Target: 0 NOPO jobs',m.noPo24===0?'good':'bad'),
+ card('NOPO · 24 hours',m.noPo24.toLocaleString(),m.noPoUnknown+' additional cases have unverified PO/completion timestamps','Target: 0 NOPO jobs',m.noPo24===0?'good':'bad'),
  card('Out-warranty revenue',money(m.revenue),money(Math.max(0,TARGET.revenue-m.revenue))+' to monthly target','Target: PKR 1,000,000',m.revenue>=TARGET.revenue?'good':'warn'),
  card('Warranty job mix',m.uwPct===null?'N/A':m.uwPct.toFixed(1)+'%',m.uw+' warranty jobs','Target: 60%',m.uwPct!==null&&Math.abs(m.uwPct-60)<=2?'good':'warn'),
  card('Out-warranty job mix',m.oowPct===null?'N/A':m.oowPct.toFixed(1)+'%',m.oow+' out-warranty jobs','Target: 40%',m.oowPct!==null&&Math.abs(m.oowPct-40)<=2?'good':'warn'),
@@ -383,14 +385,15 @@ function line(label,value,total,detail){
  return '<div class="bar-row"><div class="bar-label" title="'+esc(label)+'">'+esc(label)+'</div><div class="track"><div class="fill" style="width:'+width.toFixed(1)+'%"></div></div><div class="bar-num">'+value+'</div></div>';
 }
 function groupCount(rows,fn){const map=new Map();rows.forEach(function(r){const k=fn(r)||'Unknown';map.set(k,(map.get(k)||0)+1)});return [...map.entries()].sort(function(a,b){return b[1]-a[1]})}
-function compareText(now,prev,suffix){if(prev===0)return now===0?'No change':'New';const diff=now-prev;return (diff>0?'+':'')+diff.toLocaleString()+ (suffix||'')+' vs previous week'}
+function averageTurn(rows){const values=rows.map(turn).filter(function(x){return x!==null});return values.length?values.reduce(function(a,b){return a+b},0)/values.length:null}
+function compareLabel(now,prev,unit){if(now===null||prev===null)return 'Not enough data for comparison';if(prev===0)return now===0?'No change':'New this week';const diff=now-prev;return (diff>0?'+':'')+(unit==='pp'?diff.toFixed(1):Math.round(diff).toLocaleString())+(unit==='pp'?' percentage points':unit==='min'?' minutes':'')+' vs previous week'}
 function renderWeek(rows,endDate,asOf){
  const end=new Date(endDate);end.setHours(0,0,0,0);const curStart=new Date(end);curStart.setDate(curStart.getDate()-6);const prevEnd=new Date(curStart);const prevStart=new Date(prevEnd);prevStart.setDate(prevStart.getDate()-7);
  const current=rows.filter(function(r){return r.createdAt&&r.createdAt>=curStart&&r.createdAt<new Date(end.getTime()+86400000)});
  const previous=rows.filter(function(r){return r.createdAt&&r.createdAt>=prevStart&&r.createdAt<curStart});
  const a=metricSet(current,asOf),b=metricSet(previous,asOf);
- function box(label,metric,prior,sub){return '<div class="compare-card"><strong>'+esc(label)+'</strong><div class="big">'+esc(metric)+'</div><div class="delta">'+esc(compareText(metric,prior,sub))+'</div></div>'}
- $('weekCompare').innerHTML=box('Jobs',a.total,b.total,' jobs')+box('Out-warranty revenue',money(a.revenue),money(b.revenue),'')+box('1-hour proxy',a.onePct===null?'N/A':a.onePct.toFixed(1)+'%',b.onePct===null?0:b.onePct.toFixed(1),'')+box('PO rate',a.poRate===null?'N/A':a.poRate.toFixed(1)+'%',b.poRate===null?0:b.poRate.toFixed(1),'');
+ function box(label,now,prior,display,unit){return '<div class="compare-card"><strong>'+esc(label)+'</strong><div class="big">'+esc(display)+'</div><div class="delta">'+esc(compareLabel(now,prior,unit))+'</div></div>'}
+ $('weekCompare').innerHTML=box('Jobs',a.total,b.total,a.total.toLocaleString(),'count')+box('Out-warranty revenue',a.revenue,b.revenue,money(a.revenue),'money')+box('1-hour proxy',a.onePct,b.onePct,a.onePct===null?'N/A':a.onePct.toFixed(1)+'%','pp')+box('PO rate',a.poRate,b.poRate,a.poRate===null?'N/A':a.poRate.toFixed(1)+'%','pp')+box('Average repair TAT',averageTurn(current),averageTurn(previous),averageTurn(current)===null?'N/A':fmtHours(averageTurn(current)),'min')+box('Satisfaction / Bounce',null,null,'Not in this CRM export','')
 }
 function renderTrend(rows){
  const days=groupCount(rows,function(r){return dayKey(r.createdAt)}).filter(function(x){return x[0]!=='Unknown'}).sort(function(a,b){return a[0].localeCompare(b[0])});
@@ -415,7 +418,8 @@ function renderDetails(rows,m,asOf){
  ['2-hour PO eligible SP shortage jobs',m.twoTotal,m.twoOn+' on time; '+m.twoLate+' late; '+m.twoUnknown+' missing/invalid PO timestamp'],
  ['3-day cohort',m.threeMeasured,m.threeOn+' within 3 days; '+m.threeLate+' beyond 3 days; '+m.threeUnknown+' missing completion timestamp'],
  ['Open jobs',m.open,m.repairOver+' repair-overdue in 1-hour stock-proxy cohort'],
- ['NOPO aged 24 hours or more',m.noPo24,'Open jobs with no PO/AP at the selected as-of time'],
+ ['NOPO aged 24 hours or more',m.noPo24,'No repair or PO was recorded within the first 24 hours'],
+ ['NOPO timing unknown',m.noPoUnknown,'PO code or terminal status exists but its event timestamp is missing'],
  ['Invalid Created/Complete order',m.invalid,'Negative turnaround is excluded from TAT calculations']
  ];
  $('tatDetails').innerHTML=tat.map(function(x){return '<div class="gap-item"><div><b>'+esc(x[0])+'</b><div><span>'+esc(x[2])+'</span></div></div><b>'+x[1]+'</b></div>'}).join('');
@@ -466,7 +470,8 @@ function rowResult(r,asOf){
  const duration=turn(r),age=r.createdAt&&asOf?(asOf-r.createdAt)/60000:null,pm=poMins(r),done=isDone(r);
  if(r.createdAt&&r.completedAt&&r.completedAt<r.createdAt)return 'Invalid timestamp order';
  if(!done&&isOneHourEligible(r)&&age!==null&&age>=60)return '1-hour repair overdue';
- if(!done&&!r.hasPO&&age!==null&&age>=1440)return 'NOPO · 24h overdue';
+ if(noPoWithin24Violation(r,asOf))return 'NOPO · 24h KPI miss';
+ if(!done&&compact(r.category)==='sp'&&r.shortage==='yes'&&age!==null&&age>=120&&!r.hasPO)return '2-hour PO pending/overdue';
  if(compact(r.category)==='sp'&&r.shortage==='yes'&&pm!==null&&pm>120)return 'PO created late';
  if(compact(r.category)==='sp'&&r.shortage==='yes'&&r.hasPO&&pm===null)return 'PO timing unverified';
  if(isOneHourEligible(r)&&duration!==null&&duration>60)return 'Completed over 1 hour';
@@ -479,7 +484,7 @@ function getViewList(rows,asOf){
  const v=$('jobView').value||'exceptions',q=TBISImporter.norm($('jobSearch').value);
  return rows.filter(function(r){
   const d=turn(r),age=r.createdAt&&asOf?(asOf-r.createdAt)/60000:null,pm=poMins(r),done=isDone(r);
-  let yes=v==='all'?true:v==='open'?!done:v==='late'?isOneHourEligible(r)&&d!==null&&d>60:v==='ontime'?isOneHourEligible(r)&&d!==null&&d<=60:v==='nopo'?!done&&!r.hasPO&&age!==null&&age>=1440:v==='repair'?((isOneHourEligible(r)&&d!==null&&d>60)||(!done&&isOneHourEligible(r)&&age!==null&&age>=60)):v==='po'?(compact(r.category)==='sp'&&r.shortage==='yes'&&(pm!==null&&pm>120||(!r.hasPO&&age!==null&&age>=120)||(r.hasPO&&pm===null))):(!done&&((!r.hasPO&&age!==null&&age>=1440)||(r.shortage==='no'&&compact(r.category)==='sp'&&age!==null&&age>=60))||(isOneHourEligible(r)&&d!==null&&d>60)||(pm!==null&&pm>120));
+  let yes=v==='all'?true:v==='open'?!done:v==='late'?isOneHourEligible(r)&&d!==null&&d>60:v==='ontime'?isOneHourEligible(r)&&d!==null&&d<=60:v==='nopo'?noPoWithin24Violation(r,asOf):v==='repair'?((isOneHourEligible(r)&&d!==null&&d>60)||(!done&&isOneHourEligible(r)&&age!==null&&age>=60)):v==='po'?(compact(r.category)==='sp'&&r.shortage==='yes'&&(pm!==null&&pm>120||(!done&&!r.hasPO&&age!==null&&age>=120)||(r.hasPO&&pm===null))):(!done&&(noPoWithin24Violation(r,asOf)||(r.shortage==='no'&&compact(r.category)==='sp'&&age!==null&&age>=60))||(isOneHourEligible(r)&&d!==null&&d>60)||(pm!==null&&pm>120));
   return yes&&(!q||TBISImporter.norm(r.job).indexOf(q)>=0);
  });
 }
@@ -589,6 +594,9 @@ function exportPack(){
  const weekMap=groupRows(records,function(r){return r.createdAt?weekStart(r.createdAt):''});
  const weekly=[...weekMap.entries()].sort(function(a,b){return a[0].localeCompare(b[0])}).map(function(x){const z=metricSet(x[1],asOf);return {WeekStarting:x[0],Jobs:z.total,WarrantyJobs:z.uw,OutWarrantyJobs:z.oow,OutWarrantyRevenuePKR:z.revenue,OneHourProxyPct:z.onePct,TwoHourPOPct:z.twoPct,POJobs:z.po,PoRatePct:z.poRate,NoPO24:z.noPo24,ThreeDayTATPct:z.threePct}});
  sheet('Weekly Summary',weekly);
+ const weeklyTopModels=[],weeklyTopParts=[];
+ weekMap.forEach(function(group,week){groupCount(group,function(r){return r.model}).slice(0,7).forEach(function(x,i){weeklyTopModels.push({WeekStarting:week,Rank:i+1,Model:x[0],Jobs:x[1]})});const partCounts=new Map();group.forEach(function(r){r.consumed.forEach(function(p){const key=(p.code||'')+'|'+(p.desc||'Unknown');partCounts.set(key,(partCounts.get(key)||0)+p.qty)})});[...partCounts.entries()].sort(function(a,b){return b[1]-a[1]}).slice(0,7).forEach(function(x,i){weeklyTopParts.push({WeekStarting:week,Rank:i+1,Part:x[0].split('|')[1],MaterialCode:x[0].split('|')[0],ConsumedQty:x[1]})})});
+ sheet('Weekly Top Models',weeklyTopModels);sheet('Weekly Top Parts',weeklyTopParts);
  const monthMap=groupRows(records,function(r){return r.createdAt?r.createdAt.getFullYear()+'-'+String(r.createdAt.getMonth()+1).padStart(2,'0'):''});
  const monthly=[...monthMap.entries()].sort(function(a,b){return a[0].localeCompare(b[0])}).map(function(x){const z=metricSet(x[1],asOf);return {Month:x[0],Jobs:z.total,WarrantyJobs:z.uw,WarrantyPct:z.uwPct,OutWarrantyJobs:z.oow,OutWarrantyPct:z.oowPct,OutWarrantyRevenuePKR:z.revenue,OneHourProxyPct:z.onePct,TwoHourPOPct:z.twoPct,POJobs:z.po,PoRatePct:z.poRate,NoPO24:z.noPo24,ThreeDayTATPct:z.threePct,RWRJobs:z.rwr}});
  sheet('Monthly Summary',monthly);
