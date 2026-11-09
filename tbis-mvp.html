@@ -254,17 +254,17 @@ function compute(){
    repairOver:!done&&age!==null&&age>=60,nopoOver:!done&&!r.hasPO&&age!==null&&age>=1440,
    oneMeasured:oneScope&&validDuration,onePass:oneScope&&validDuration&&duration<=60,
    twoMeasured:twoScope&&poValid,twoPass:twoScope&&poValid&&poMinutes<=120,
-   threeMeasured:twoScope&&threeValid,threePass:twoScope&&threeValid&&threeMinutes<=4320,
+   threeMeasured:twoScope&&threeValid,threePass:twoScope&&threeValid&&threeMinutes<=4320,threeOpenOver:twoScope&&!done&&poAge!==null&&poAge>=4320,
    lateRepair:oneScope&&validDuration&&duration>60,
    latePO:twoScope&&poValid&&poMinutes>120,
-   lateThree:twoScope&&threeValid&&threeMinutes>4320,
+   lateThree:twoScope&&threeValid&&threeMinutes>4320,threeOpenOver:twoScope&&!done&&poAge!==null&&poAge>=4320,
    delivered:!!r.returnAt&&(compact(r.status)==="returned"||compact(r.status)==="swapcertification")
   };
  });
  const total=all.length, warranty=all.filter(r=>r.warranty.toLowerCase().includes("under warranty")),outWarranty=all.filter(r=>r.warranty.toLowerCase().includes("out warranty"));
  const po=all.filter(r=>r.hasPO), oneScope=all.filter(r=>r.oneScope),oneKnown=oneScope.filter(r=>r.oneMeasured),onePass=oneScope.filter(r=>r.onePass);
  const twoScope=all.filter(r=>r.twoScope),twoKnown=twoScope.filter(r=>r.twoMeasured),twoPass=twoScope.filter(r=>r.twoPass);
- const threeKnown=all.filter(r=>r.threeMeasured),threePass=all.filter(r=>r.threePass);
+ const threeKnown=all.filter(r=>r.threeMeasured),threePass=all.filter(r=>r.threePass),threeOpenOver=all.filter(r=>r.threeOpenOver),threeDue=threeKnown.length+threeOpenOver.length;
  const open=all.filter(r=>!r.done),noPO=open.filter(r=>r.nopoOver),repairOver=open.filter(r=>r.repairOver);
  const rfd=all.filter(r=>r.rfd),rfdOver=rfd.filter(r=>r.rfdAge!==null&&r.rfdAge>2);
  const rwr=all.filter(r=>compact(r.service)==="rwr");
@@ -274,7 +274,7 @@ function compute(){
  const policy=policyScope.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0);
  const within7=policy.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);
  const invalidCreated=selected.filter(r=>!r.createdAt).length,invalidCompletion=selected.filter(r=>!r.completedAt).length;
- return {all,total,warranty,outWarranty,po,oneScope,oneKnown,onePass,twoScope,twoKnown,twoPass,threeKnown,threePass,open,noPO,repairOver,rfd,rfdOver,rwr,owAmount,received,bounce,policyScope,policy,within7,
+ return {all,total,warranty,outWarranty,po,oneScope,oneKnown,onePass,twoScope,twoKnown,twoPass,threeKnown,threePass,open,noPO,repairOver,rfd,rfdOver,rwr,owAmount,received,bounce,policyScope,policy,within7,threeOpenOver,threeDue,
   unknownWarranty:total-warranty.length-outWarranty.length,invalidCreated,invalidCompletion,asof,from,to};
 }
 function calcBounce(list){
@@ -343,10 +343,13 @@ function render(){
   kpi("Warranty mix",c.warranty.length+" / "+c.outWarranty.length,"Warranty "+percent(c.warranty.length,c.total)+" · Out warranty "+percent(c.outWarranty.length,c.total),"◉","",null),
   kpi("Out-warranty amount",money(c.owAmount),"<b>Target:</b> "+money(num($("revtarget").value))+" · "+percent(c.owAmount,num($("revtarget").value))+" achieved","₨",c.owAmount>=num($("revtarget").value)?"good":"warn","CRM Total Amt"),
   kpi("1-hour TAT",percent(c.onePass.length,c.oneKnown.length),c.onePass.length+" within / "+c.oneKnown.length+" measured · "+(c.oneScope.length-c.oneKnown.length)+" unknown · target "+num($("t1").value)+"%","◷",c.onePass.length/c.oneKnown.length>=num($("t1").value)/100?"good":"bad","Provisional · stock not verified"),
-  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" timed · "+(c.twoScope.length-c.twoKnown.length)+" unknown · target "+num($("t2").value)+"%","↗",c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP shortage records"),
+  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" timed · "+(c.twoKnown.length-c.twoPass.length)+" late · "+(c.twoScope.length-c.twoKnown.length)+" unknown · target "+num($("t2").value)+"%","↗",c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP shortage records"),
+  kpi("Completed within 1H",c.onePass.length+" jobs",(c.onePass.length)+" on time · "+(c.oneKnown.length-c.onePass.length)+" over target · "+(c.oneScope.length-c.oneKnown.length)+" unknown","✓","good","Eligible measured jobs"),
+  kpi("Open jobs",c.open.length+" jobs",c.repairOver.length+" repair overdue · "+c.noPO.length+" NOPO overdue","◷",c.open.length?"warn":"good","As-of date applies"),
+  kpi("Open repair overdue",c.repairOver.length+" jobs","Open for at least 1 hour · repair target is 1 hour","! ",c.repairOver.length?"bad":"good","Action list"),
   kpi("PO rate",percent(c.po.length,c.total),c.po.length+" jobs with any PO/AP code or date","▣",c.po.length/c.total>.25?"warn":"","Minimize"),
   kpi("NOPO ≥24 hours",c.noPO.length+" jobs",c.open.length+" open jobs · target is zero NOPO jobs","!",c.noPO.length?"bad":"good",c.noPO.length?"Action required":"Target achieved"),
-  kpi("3-day close after PO",percent(c.threePass.length,c.threeKnown.length),c.threePass.length+" within / "+c.threeKnown.length+" measurable · "+(c.threeKnown.length-c.threePass.length)+" late","◴",c.threePass.length/c.threeKnown.length>=.97?"good":"warn","Start-point needs approval"),
+  kpi("3-day close after PO",percent(c.threePass.length,c.threeDue),c.threePass.length+" within / "+c.threeDue+" matured · "+(c.threeKnown.length-c.threePass.length+c.threeOpenOver.length)+" late / overdue","◴",c.threePass.length/c.threeDue>=.97?"good":"warn","Start-point needs approval"),
   kpi("RWR jobs",c.rwr.length+" jobs",percent(c.rwr.length,c.outWarranty.length)+" of out-warranty jobs · "+c.rwr.filter(r=>r.warranty.toLowerCase().includes("out warranty")).length+" are out warranty","↩","warn","Review RWR causes"),
   kpi("7-day SWAP / DAP / DOA",c.within7.length+" eligible",c.within7.length+" within 7 days / "+c.policy.length+" with valid activation dates · "+(c.policyScope.length-c.policy.length)+" missing / invalid","7","","Activation evidence"),
   kpi("RFD older than 2 days",c.rfdOver.length+" jobs",c.rfd.length+" ready for delivery · "+c.rfdOver.length+" beyond preferred return time","▣",c.rfdOver.length?"bad":"good","Return follow-up"),
@@ -395,7 +398,7 @@ function renderExceptions(c){
   if(type==="repair")return r.lateRepair||r.repairOver;
   if(type==="po")return r.latePO;
   if(type==="nopo")return r.nopoOver;
-  if(type==="three")return r.lateThree;
+  if(type==="three")return r.lateThree||r.threeOpenOver;
   if(type==="rfd")return r.rfdAge!==null&&r.rfdAge>2;
   if(type==="invalid")return !r.createdAt||(!r.completedAt&&r.done)||r.invalidOrder;
   return r.lateRepair||r.repairOver||r.latePO||r.nopoOver||r.lateThree||(r.rfdAge!==null&&r.rfdAge>2)||r.invalidOrder;
@@ -411,6 +414,7 @@ function renderExceptions(c){
   if(r.latePO)actions.push("PO >2H");
   if(r.nopoOver)actions.push("NOPO ≥24H");
   if(r.lateThree)actions.push("PO-to-close >3 days");
+  if(r.threeOpenOver)actions.push("Open >3 days after PO");
   if(r.rfdAge!==null&&r.rfdAge>2)actions.push("RFD follow-up");
   if(!r.completedAt&&r.done)actions.push("TAT timestamp missing");
   return "<tr><td class='job'>"+esc(r.job)+"</td><td>"+esc(r.source||"—")+"</td><td>"+esc(r.category||"—")+"</td><td>"+esc(r.model||"—")+"</td><td>"+esc(r.warranty||"—")+"</td><td>"+esc(dateText(r.createdAt))+"</td><td>"+esc(dateText(r.completedAt))+"</td><td>"+esc(age)+"</td><td><span class='tag "+(r.hasPO?"ok":"warn")+"'>"+(r.hasPO?"Found":"Not found")+"</span></td><td>"+esc(r.status||"—")+"</td><td>"+esc(actions.join(" · ")||"Review")+"</td></tr>";
