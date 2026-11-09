@@ -24,3 +24,7 @@ test('malformed quoted field produces a helpful error',()=>{assert.throws(()=>pa
 test('semicolon and pipe delimiters are detected',()=>{for(const sep of [';','|']){const x=parsed(csv([header,row('JS001')],sep));assert.equal(x.delimiter,sep);assert.equal(x.rowCount,1)}});
 test('header search continues beyond 1,000 physical rows',()=>{const prefix=Array.from({length:1105},(_,i)=>'Title row '+i).join('\n')+'\n';const x=parsed(prefix+csv([header,row('JS001')],'\t'));assert.equal(x.headerIndex,1105);assert.equal(x.rowCount,1)});
 test('unsupported file extensions have a helpful error',()=>{assert.throws(()=>importer.validateExtension('report.pdf'),/Unsupported file format/);assert.equal(importer.validateExtension('report.xlsx'),'xlsx')});
+
+test('XLSX ZIP signature overrides a misleading CSV extension',()=>{const bytes=Uint8Array.from([0x50,0x4B,0x03,0x04,0x14,0,0,0]);assert.equal(importer.detectFileKind(bytes,'monthly.csv'),'xlsx')});
+test('legacy XLS OLE signature is recognized',()=>{const bytes=Uint8Array.from([0xD0,0xCF,0x11,0xE0,0xA1,0xB1,0x1A,0xE1]);assert.equal(importer.detectFileKind(bytes,'report.txt'),'xls')});
+test('plain delimited file uses content parser even with text extension',()=>{const bytes=enc('JS No,Created On,ShopCode,ShopName,Repair Complete Date\n1,2026-10-01,S1,Test,2026-10-01');assert.equal(importer.detectFileKind(bytes,'report.txt'),'text')});
