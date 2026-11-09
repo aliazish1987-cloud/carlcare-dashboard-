@@ -48,8 +48,8 @@
    <section class="panel listpanel"><div class="panelhead"><div><h3>Inventory control</h3><p>Stock comparison requires an inventory report</p></div></div><div class="qualityitem"><strong>Not connected</strong><span>Consumed parts and PO lines are available, but stock-on-hand is not in this CRM file. Upload the inventory export before TBIS flags potentially avoidable POs.</span></div></section>
   </div>
   <div class="grid2">
-   <section class="panel chartpanel"><div class="panelhead"><div><h3>Weekly performance</h3><p>Week-by-week and previous-week comparison</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Week starts</th><th>Jobs</th><th>OW amount</th><th>PO jobs</th><th>1H within</th></tr></thead><tbody id="weekly"></tbody></table></div></section>
-   <section class="panel chartpanel"><div class="panelhead"><div><h3>Monthly performance</h3><p>Consolidated month view</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Month</th><th>Jobs</th><th>Warranty</th><th>OW amount</th><th>PO rate</th></tr></thead><tbody id="monthly"></tbody></table></div></section>
+   <section class="panel chartpanel"><div class="panelhead"><div><h3>Weekly performance</h3><p>Week-by-week and previous-week comparison</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Week starts</th><th>Jobs</th><th>OW amount</th><th>PO rate</th><th>1H rate</th><th>3-day rate</th></tr></thead><tbody id="weekly"></tbody></table></div></section>
+   <section class="panel chartpanel"><div class="panelhead"><div><h3>Monthly performance</h3><p>Consolidated month view</p></div></div><div class="tablewrap"><table class="summarytable"><thead><tr><th>Month</th><th>Jobs</th><th>Warranty %</th><th>OW amount</th><th>PO rate</th><th>RWR jobs</th></tr></thead><tbody id="monthly"></tbody></table></div></section>
   </div>
   <section class="panel listpanel" style="margin-top:14px"><div class="panelhead"><div><h3>Daily operations pulse</h3><p>New, repaired, returned and PO activity for one selected day</p></div><label class="field">ANALYSIS DATE<input id="dailyDate" type="date"></label></div><div class="qualitygrid" id="dailyPulse"></div></section>
   <section class="panel tablepanel">
@@ -270,10 +270,11 @@ function compute(){
  const rwr=all.filter(r=>compact(r.service)==="rwr");
  const owAmount=outWarranty.reduce((s,r)=>s+r.amount,0),received=outWarranty.reduce((s,r)=>s+r.received,0);
  const bounce=calcBounce(all);
- const policy=all.filter(r=>["swap","dap","doa"].includes(compact(r.service))&&r.activationAt&&r.createdAt);
- const within7=policy.filter(r=>(r.createdAt-r.activationAt)>=0&&(r.createdAt-r.activationAt)<=7*86400000);
+ const policyScope=all.filter(r=>["swap","dap","doa"].includes(compact(r.service)));
+ const policy=policyScope.filter(r=>r.activationAt&&r.createdAt&&(r.createdAt-r.activationAt)>=0);
+ const within7=policy.filter(r=>(r.createdAt-r.activationAt)<=7*86400000);
  const invalidCreated=selected.filter(r=>!r.createdAt).length,invalidCompletion=selected.filter(r=>!r.completedAt).length;
- return {all,total,warranty,outWarranty,po,oneScope,oneKnown,onePass,twoScope,twoKnown,twoPass,threeKnown,threePass,open,noPO,repairOver,rfd,rfdOver,rwr,owAmount,received,bounce,policy,within7,
+ return {all,total,warranty,outWarranty,po,oneScope,oneKnown,onePass,twoScope,twoKnown,twoPass,threeKnown,threePass,open,noPO,repairOver,rfd,rfdOver,rwr,owAmount,received,bounce,policyScope,policy,within7,
   unknownWarranty:total-warranty.length-outWarranty.length,invalidCreated,invalidCompletion,asof,from,to};
 }
 function calcBounce(list){
@@ -316,11 +317,11 @@ function poTypeRows(list){
 }
 function weekRows(list){
  const groups=groupBy(list,r=>{if(!r.createdAt)return"";const d=new Date(r.createdAt.getFullYear(),r.createdAt.getMonth(),r.createdAt.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return localKey(d)});
- return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([wk,jobs])=>{const ow=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));const one=jobs.filter(r=>r.oneMeasured);return {week:wk,jobs:jobs.length,ow:ow.reduce((s,r)=>s+r.amount,0),po:jobs.filter(r=>r.hasPO).length,one:one.filter(r=>r.onePass).length+"/"+one.length,onePct:percent(one.filter(r=>r.onePass).length,one.length)}});
+ return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([wk,jobs])=>{const ow=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));const one=jobs.filter(r=>r.oneMeasured);const three=jobs.filter(r=>r.threeMeasured);const po=jobs.filter(r=>r.hasPO).length;const bounce=calcBounce(jobs).pairs;return {week:wk,jobs:jobs.length,ow:ow.reduce((s,r)=>s+r.amount,0),poPct:percent(po,jobs.length),onePct:percent(one.filter(r=>r.onePass).length,one.length),threePct:percent(three.filter(r=>r.threePass).length,three.length),bounce}});
 }
 function monthRows(list){
  const groups=groupBy(list,r=>r.createdAt?r.createdAt.getFullYear()+"-"+String(r.createdAt.getMonth()+1).padStart(2,"0"):"");
- return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([mo,jobs])=>{const w=jobs.filter(r=>r.warranty.toLowerCase().includes("under warranty")).length;const o=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));const po=jobs.filter(r=>r.hasPO).length;return {month:mo,jobs:jobs.length,warranty:w,ow:jobs.reduce((s,r)=>s+r.amount*(r.warranty.toLowerCase().includes("out warranty")?1:0),0),poPct:percent(po,jobs.length)}});
+ return [...groups.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([mo,jobs])=>{const w=jobs.filter(r=>r.warranty.toLowerCase().includes("under warranty")).length;const o=jobs.filter(r=>r.warranty.toLowerCase().includes("out warranty"));const po=jobs.filter(r=>r.hasPO).length;const rwr=jobs.filter(r=>compact(r.service)==="rwr").length;return {month:mo,jobs:jobs.length,warranty:w,ow:jobs.reduce((s,r)=>s+r.amount*(r.warranty.toLowerCase().includes("out warranty")?1:0),0),poPct:percent(po,jobs.length),warrantyPct:percent(w,jobs.length),rwr}});
 }
 function drawBars(daily){
  const cut=daily.slice(-18),max=Math.max(1,...cut.map(x=>x.jobs));
@@ -355,15 +356,18 @@ function render(){
  $("parts").innerHTML=rankRows(topParts(all));
  $("poBreakdown").innerHTML=rankRows(poTypeRows(all));
  const weeks=weekRows(all);
- $("weekly").innerHTML=weeks.length?weeks.map((w,i)=>{const prev=weeks[i-1];const change=prev?w.jobs-prev.jobs:null;return "<tr><td>"+w.week+"</td><td>"+w.jobs+(change===null?"":' <span style="color:'+(change>=0?"#18815c":"#b33e4a")+'">'+(change>=0?"+":"")+change+"</span>")+"</td><td>"+money(w.ow)+"</td><td>"+w.po+"</td><td>"+w.one+" <span class='metaText'>("+w.onePct+")</span></td></tr>"}).join(""):'<tr><td colspan="5">No weekly data</td></tr>';
+ $("weekly").innerHTML=weeks.length?weeks.map((w,i)=>{const prev=weeks[i-1];const change=prev?w.jobs-prev.jobs:null;return "<tr><td>"+w.week+"</td><td>"+w.jobs+(change===null?"":' <span style="color:'+(change>=0?"#18815c":"#b33e4a")+'">'+(change>=0?"+":"")+change+"</span>")+"</td><td>"+money(w.ow)+"</td><td>"+w.poPct+"</td><td>"+w.onePct+"</td><td>"+w.threePct+"</td></tr>"}).join(""):'<tr><td colspan="6">No weekly data</td></tr>';
  const months=monthRows(all);
- $("monthly").innerHTML=months.length?months.map(m=>"<tr><td>"+m.month+"</td><td>"+m.jobs+"</td><td>"+m.warranty+"</td><td>"+money(m.ow)+"</td><td>"+m.poPct+"</td></tr>").join(""):'<tr><td colspan="5">No monthly data</td></tr>';
+ $("monthly").innerHTML=months.length?months.map(m=>"<tr><td>"+m.month+"</td><td>"+m.jobs+"</td><td>"+m.warrantyPct+"</td><td>"+money(m.ow)+"</td><td>"+m.poPct+"</td><td>"+m.rwr+"</td></tr>").join(""):'<tr><td colspan="6">No monthly data</td></tr>';
  const lastDate=daily.length?daily[daily.length-1].date:"";
+ const policyByType={};c.policyScope.forEach(r=>{const t=r.service.toUpperCase();if(!policyByType[t])policyByType[t]={all:0,known:0,within:0};policyByType[t].all++;if(r.activationAt&&r.createdAt){const d=(r.createdAt-r.activationAt)/86400000;if(d>=0){policyByType[t].known++;if(d<=7)policyByType[t].within++}}});
+ $("policyPulse").innerHTML=["SWAP","DAP","DOA"].map(t=>{const x=policyByType[t]||{all:0,known:0,within:0};return '<div class="qualityitem"><strong>'+x.within+' / '+x.known+'</strong><span>'+t+' · '+(x.all-x.known)+' missing activation date</span></div>'}).join("");
+ $("engineers").innerHTML=rankRows(topEngineers(c.all));
  if(!$("dailyDate").value)$("dailyDate").value=lastDate;
  renderDailyPulse(all,$("dailyDate").value);
  renderExceptions(c);
  renderQuality(c);
- $("pack").disabled=fileMetas.length===0||records.some((r,i)=>records.findIndex(x=>x.job===r.job)!==i);
+ $("pack").disabled=fileMetas.length===0||records.length!==new Set(records.map(r=>r.job)).size;
 }
 function renderDailyPulse(list,date){
  const d=date?new Date(date+"T00:00:00"):null;
@@ -372,8 +376,8 @@ function renderDailyPulse(list,date){
  const repaired=list.filter(r=>same(r.completedAt)).length;
  const returned=list.filter(r=>same(r.returnAt)&&["returned","swapcertification"].includes(compact(r.status))).length;
  const newPO=list.filter(r=>same(r.poDate)).length;
- const oldPORepair=list.filter(r=>same(r.completedAt)&&r.poDate&&r.createdAt&&r.createdAt.toDateString()!==r.completedAt.toDateString()).length;
- const oldPODelivery=list.filter(r=>same(r.returnAt)&&r.poDate&&r.createdAt&&r.createdAt.toDateString()!==r.returnAt.toDateString()).length;
+ const oldPORepair=list.filter(r=>same(r.completedAt)&&r.poDate&&r.poDate<d).length;
+ const oldPODelivery=list.filter(r=>same(r.returnAt)&&r.poDate&&r.poDate<d).length;
  const items=[["Today's new jobs",created],["Repairs completed today",repaired],["Jobs returned today",returned],["New PO/AP today",newPO],["Old PO jobs repaired today",oldPORepair],["Old PO jobs returned today",oldPODelivery]];
  $("dailyPulse").innerHTML=items.map(x=>'<div class="qualityitem"><strong>'+x[1]+'</strong><span>'+x[0]+'</span></div>').join("");
 }
@@ -412,7 +416,7 @@ function renderQuality(c){
  const blankCreated=c.invalidCreated,missingCompletion=c.invalidCompletion;
  const warrantyCheck=c.warranty.length+c.outWarranty.length+c.unknownWarranty===c.total;
  const items=[["Imported job rows",records.length],["Unique JS No",new Set(records.map(r=>r.job)).size],["Duplicate JS No",duplicate],["Missing / invalid completion dates",missingCompletion],
-  ["Warranty reconciliation",warrantyCheck?"PASS":"CHECK"],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")||"—"],["CRM columns detected",headersFound.length||"—"],["Source files",fileMetas.length]];
+  ["Warranty reconciliation",warrantyCheck?"PASS":"CHECK"],["Currency codes",[...new Set(c.all.map(r=>r.currency))].join(", ")||"—"],["CRM columns detected",headersFound.length?Math.max(...headersFound):"—"],["Source files",fileMetas.length]];
  $("quality").innerHTML=items.map(x=>'<div class="qualityitem"><strong>'+esc(x[1])+'</strong><span>'+esc(x[0])+'</span></div>').join("");
  const issues=[];
  if(duplicate)issues.push("Duplicate JS No values are present. The dashboard keeps every row; remove overlapping exports before using combined totals.");
@@ -432,7 +436,7 @@ function exportCsv(){
  const a=document.createElement("a"),url=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.href=url;a.download="TBIS-safe-exceptions.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function buildPack(){
- if(records.some((r,i)=>records.findIndex(x=>x.job===r.job)!==i)){show("warn","Management pack is paused because duplicate JS No values exist. Remove overlapping exports first; no records have been silently removed.");return}
+ if(records.length!==new Set(records.map(r=>r.job)).size){show("warn","Management pack is paused because duplicate JS No values exist. Remove overlapping exports first; no records have been silently removed.");return}
  const c=compute(),wb=XLSX.utils.book_new();
  const add=(name,rows)=>{const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,name)};
  const summary=[
