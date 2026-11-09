@@ -257,11 +257,11 @@ function compute(){
    repairOver:!done&&oneEligible&&age!==null&&age>=60,
    nopoOver:!done&&!r.hasPO&&age!==null&&age>=1440,
    oneMeasured:oneEligible&&validDuration,onePass:oneEligible&&validDuration&&duration<=60,
-   twoMeasured:twoScope&&poValid,twoPass:twoScope&&poValid&&poMinutes<=120,
+   twoMeasured:twoScope&&(poValid||(!r.hasPO&&(done||(age!==null&&age>=120)))),twoPass:twoScope&&poValid&&poMinutes<=120&&((done)||(age!==null&&age>=120)),
    threeMeasured:twoScope&&threeValid,threePass:twoScope&&threeValid&&threeMinutes<=4320,
    threeOpenOver:twoScope&&!done&&r.hasPO&&poAge!==null&&poAge>=4320,
    lateRepair:oneEligible&&validDuration&&duration>60,
-   latePO:twoScope&&poValid&&poMinutes>120,
+   latePO:twoScope&&((poValid&&poMinutes>120)||(!r.hasPO&&(done||(age!==null&&age>=120)))),
    lateThree:twoScope&&threeValid&&threeMinutes>4320,
    delivered:!!r.returnAt&&(compact(r.status)==="returned"||compact(r.status)==="swapcertification")
   };
@@ -278,7 +278,7 @@ function compute(){
  const twoScope=all.filter(r=>r.twoScope);
  const twoKnown=twoScope.filter(r=>r.twoMeasured);
  const twoPass=twoScope.filter(r=>r.twoPass);
- const twoNoPO=twoScope.filter(r=>!r.hasPO).length;
+ const twoNoPO=twoScope.filter(r=>!r.hasPO&&(r.done||(r.age!==null&&r.age>=120))).length;
  const twoDateUnknown=twoScope.filter(r=>r.hasPO&&!r.poValid).length;
  const threeKnown=all.filter(r=>r.threeMeasured);
  const threePass=all.filter(r=>r.threePass);
@@ -397,7 +397,7 @@ function render(){
   kpi("Warranty mix",c.warranty.length+" / "+c.outWarranty.length,"Warranty "+percent(c.warranty.length,c.total)+" (target 60%) · Out warranty "+percent(c.outWarranty.length,c.total)+" (target 40%)","◉","",null),
   kpi("Out-warranty amount",money(c.owAmount),"<b>Period target:</b> "+money(c.periodRevenueTarget)+" ("+c.targetMonths+" month(s)) · "+percent(c.owAmount,c.periodRevenueTarget)+" achieved","₨",c.owAmount>=c.periodRevenueTarget?"good":"warn","CRM Total Amt, not collections"),
   kpi("1-hour TAT",percent(c.onePass.length,c.oneKnown.length),c.onePass.length+" within / "+c.oneKnown.length+" measured · "+(c.oneKnown.length-c.onePass.length)+" late · "+(c.oneEligibleRows.length-c.oneKnown.length)+" unknown · "+c.oneExcludedShortage+" shortage records excluded","◷",c.oneKnown.length&&c.onePass.length/c.oneKnown.length>=num($("t1").value)/100?"good":"bad","Is Shortage=No proxy · stock not verified"),
-  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" timed · "+(c.twoKnown.length-c.twoPass.length)+" late · "+c.twoNoPO+" no PO/AP · "+c.twoDateUnknown+" PO date unknown","↗",c.twoKnown.length&&c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP Is Shortage=Yes"),
+  kpi("2-hour PO compliance",percent(c.twoPass.length,c.twoKnown.length),c.twoPass.length+" within / "+c.twoKnown.length+" assessed · "+(c.twoKnown.length-c.twoPass.length)+" misses (late or no PO) · "+c.twoDateUnknown+" PO date unknown","↗",c.twoKnown.length&&c.twoPass.length/c.twoKnown.length>=num($("t2").value)/100?"good":"bad","SP Is Shortage=Yes"),
   kpi("Completed within 1H",c.onePass.length+" jobs",c.onePass.length+" on time · "+(c.oneKnown.length-c.onePass.length)+" over target · "+(c.oneEligibleRows.length-c.oneKnown.length)+" unknown","✓","good","Eligible measured jobs"),
   kpi("Open jobs",c.open.length+" jobs",c.repairOver.length+" eligible 1H repair overdue · "+c.noPO.length+" NOPO ≥24h","◷",c.open.length?"warn":"good","As-of date applies"),
   kpi("Open repair overdue",c.repairOver.length+" jobs","Open eligible SP Carry In / Online with Is Shortage=No for at least 1 hour","! ",c.repairOver.length?"bad":"good","Availability proxy only"),
@@ -455,9 +455,10 @@ function renderExceptions(c){
   if(type==="three")return r.lateThree||r.threeOpenOver;
   if(type==="rfd")return r.rfdAge!==null&&r.rfdAge>2;
   if(type==="invalid")return !r.createdAt||(!r.completedAt&&r.done)||r.invalidOrder;
-  return r.lateRepair||r.repairOver||r.latePO||r.nopoOver||r.lateThree||(r.rfdAge!==null&&r.rfdAge>2)||r.invalidOrder;
+  return r.lateRepair||r.repairOver||r.latePO||r.nopoOver||r.lateThree||r.threeOpenOver||(r.rfdAge!==null&&r.rfdAge>2)||r.invalidOrder;
  });
- list.sort((a,b)=>((b.age??b.rfdAge*1440??-1)-(a.age??a.rfdAge*1440??-1)));
+ const urgency=r=>r.age!==null&&r.age!==undefined?r.age:r.rfdAge!==null&&r.rfdAge!==undefined?r.rfdAge*1440:r.poAge??-1;
+ list.sort((a,b)=>urgency(b)-urgency(a));
  currentExceptions=list;
  $("exceptions").innerHTML=list.map(r=>{
   const age=r.rfdAge!==null&&r.rfd?Math.round(r.rfdAge*10)/10+"d RFD":r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown";
@@ -465,7 +466,7 @@ function renderExceptions(c){
   if(r.invalidOrder)actions.push("Invalid date order");
   if(r.lateRepair)actions.push("1H target missed");
   if(r.repairOver)actions.push("Open >1H");
-  if(r.latePO)actions.push("PO >2H");
+  if(r.latePO)actions.push(r.hasPO?"PO created after 2H":"No PO/AP created by 2H");
   if(r.nopoOver)actions.push("NOPO ≥24H");
   if(r.lateThree)actions.push("PO-to-close >3 days");
   if(r.threeOpenOver)actions.push("Open >3 days after PO");
@@ -496,7 +497,7 @@ function renderQuality(c){
 function exportCsv(){
  const heads=["JS No","Branch","Receiving","Category","Model","Warranty","Created On","Repair Complete Date","Turnaround / Age","PO/AP found","Document Status","Action"];
  const rows=[heads,...currentExceptions.map(r=>[r.job,r.shopName||r.shop,r.source,r.category,r.model,r.warranty,r.createdRaw,r.completeRaw,r.duration!==null?minsText(r.duration):r.age!==null?minsText(r.age):"Unknown",r.hasPO?"Yes":"No",r.status,
-  [r.lateRepair?"1H target missed":"",r.repairOver?"Open >1H":"",r.latePO?"PO >2H":"",r.nopoOver?"NOPO ≥24H":"",r.lateThree?"3-day close late":"",r.rfdAge>2?"RFD follow-up":""].filter(Boolean).join("; ")])];
+  [r.lateRepair?"1H target missed":"",r.repairOver?"Open >1H":"",r.latePO?(r.hasPO?"PO >2H":"No PO/AP by 2H"):"",r.nopoOver?"NOPO ≥24H":"",r.lateThree?"3-day close late":"",r.rfdAge>2?"RFD follow-up":""].filter(Boolean).join("; ")])];
  const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");
  const a=document.createElement("a"),url=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.href=url;a.download="TBIS-safe-exceptions.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -513,7 +514,7 @@ function buildPack(){
  ["Out-warranty CRM Total Amt",c.owAmount,money(num($("revtarget").value)),"PKR; not same as accumulated received amount"],
  ["Out-warranty accumulated received",c.received,"—","CRM Accumulated Received Amt"],
  ["1H TAT",percent(c.onePass.length,c.oneKnown.length),num($("t1").value)+"%","SP Carry In/Online where Is Shortage=No; "+c.oneExcludedShortage+" shortage jobs excluded; "+(c.oneEligibleRows.length-c.oneKnown.length)+" duration unknown; shortage flag is a proxy, not an inventory count"],
- ["2H PO",percent(c.twoPass.length,c.twoKnown.length),num($("t2").value)+"%","SP Is Shortage=Yes; "+(c.twoScope.length-c.twoKnown.length)+" PO timings unknown; "+c.twoNoPO+" have no PO/AP fields; "+c.twoDateUnknown+" have PO/AP but no usable date"],
+ ["2H PO",percent(c.twoPass.length,c.twoKnown.length),num($("t2").value)+"%","SP Is Shortage=Yes; "+(c.twoScope.length-c.twoKnown.length)+" unknown PO timings; "+c.twoNoPO+" mature jobs have no PO/AP; "+c.twoDateUnknown+" have PO/AP but no usable date"],
  ["PO jobs",c.po.length,"Minimize",percent(c.po.length,c.total)],
  ["NOPO ≥24h",c.noPO.length,"0 jobs","Open jobs with no PO/AP at 24h"],
  ["3-day close after PO",percent(c.threePass.length,c.threeDue),"Track · no % target supplied","PO-to-repair-complete; "+(c.threeKnown.length-c.threePass.length+c.threeOpenOver.length)+" late / overdue; "+c.threeOpenOver.length+" open past 3 days"],
