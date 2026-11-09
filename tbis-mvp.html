@@ -28,7 +28,7 @@
  </section>
  <section id="dash" class="hide">
   <div class="panel filters">
-   <label class="field">FROM DATE<input id="from" type="date"></label><label class="field">TO DATE<input id="to" type="date"></label><label class="field">AS-OF DATE / TIME<input id="asof" type="datetime-local"></label>
+   <label class="field">FROM DATE<input id="from" type="date"></label><label class="field">TO DATE<input id="to" type="date"></label><label class="field">BRANCH<select id="shopFilter"><option value="">All branches</option></select></label><label class="field">AS-OF DATE / TIME<input id="asof" type="datetime-local"></label>
    <label class="field">1-HOUR TARGET (%)<input id="t1" type="number" min="0" max="100" step=".1" value="97.5"></label><label class="field">2-HOUR PO TARGET (%)<input id="t2" type="number" min="0" max="100" step=".1" value="97"></label><label class="field">MONTHLY JOB TARGET<input id="jobtarget" type="number" min="1" value="600"></label><label class="field">REVENUE TARGET (PKR)<input id="revtarget" type="number" min="0" step="1000" value="1000000"></label><div class="spacer"></div><span class="periodlabel" id="periodlabel"></span>
   </div>
   <div class="kpihead"><h2>Executive KPI scorecard</h2><span>Calculated from the selected Created On period</span></div>
@@ -234,7 +234,7 @@ function compute(){
  const from=$("from").value?new Date($("from").value+"T00:00:00"):null;
  const to=$("to").value?new Date($("to").value+"T23:59:59"):null;
  const asof=parseDate($("asof").value);
- const selected=records.filter(r=>r.createdAt&&(!from||r.createdAt>=from)&&(!to||r.createdAt<=to));
+ const selected=records.filter(r=>r.createdAt&&(!from||r.createdAt>=from)&&(!to||r.createdAt<=to)&&(!$("shopFilter").value||r.shop===$("shopFilter").value));
  const all=selected.map(r=>{
   const done=statusIsDone(r);
   const duration=r.createdAt&&r.completedAt?(r.completedAt-r.createdAt)/60000:null;
@@ -291,6 +291,7 @@ function rankRows(items,type){
  return items.map((x,i)=>'<div class="rankrow"><div class="ranknum">'+(i+1)+'</div><div class="rankname"><strong title="'+esc(x.name)+'">'+esc(x.name)+'</strong><small>'+esc(x.detail||"")+'</small></div><div class="rankvalue">'+esc(x.value)+'</div></div>').join("");
 }
 function dateRangeLabel(c){if(c.from&&c.to)return c.from.toLocaleDateString("en-GB")+" – "+c.to.toLocaleDateString("en-GB");return "All available dates"}
+function populateShops(){const map=new Map();records.forEach(r=>{if(r.shop)map.set(r.shop,r.shopName||r.shop)});const items=[...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));$("shopFilter").innerHTML='<option value="">All branches</option>'+items.map(([code,name])=>'<option value="'+esc(code)+'">'+esc(code+" · "+name)+"</option>").join("");if(items.length===1)$("shopFilter").value=items[0][0]}
 function dailySummaries(list){
  const map=new Map();
  list.forEach(r=>{if(!r.createdAt)return;const k=localKey(r.createdAt);if(!map.has(k))map.set(k,[]);map.get(k).push(r)});
@@ -481,7 +482,7 @@ async function loadFiles(list){
    metas.push({name:file.name,bytes:parsed.bytes,kind:parsed.kind,encoding:parsed.encoding||"Excel",delimiter:parsed.delimiter||parsed.sheet||"Workbook",columns:parsed.columns});
   }
   if(!all.length)throw new Error("No jobs with a JS No were found in the selected reports.");
-  records=all;fileMetas=metas;headersFound=metas.map(x=>x.columns);
+  records=all;fileMetas=metas;headersFound=metas.map(x=>x.columns);populateShops();
   const dates=records.map(r=>r.createdAt).filter(Boolean).sort((a,b)=>a-b);
   if(!dates.length)throw new Error("Jobs were found, but no valid Created On timestamps were detected.");
   $("from").value=dOnly(dates[0]);$("to").value=dOnly(dates[dates.length-1]);$("dailyDate").value=dOnly(dates[dates.length-1]);
@@ -503,7 +504,7 @@ $("drop").ondragleave=()=>$("drop").style.borderColor="";
 $("drop").ondrop=e=>{e.preventDefault();$("drop").style.borderColor="";loadFiles([...e.dataTransfer.files])};
 $("files").onchange=e=>loadFiles([...e.target.files]);
 $("clear").onclick=clearReports;$("pack").onclick=buildPack;$("exportCsv").onclick=exportCsv;
-["from","to","asof","t1","t2","jobtarget","revtarget"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length)render()}));
+["from","to","shopFilter","asof","t1","t2","jobtarget","revtarget"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length)render()}));
 ["dailyDate","exceptionType"].forEach(id=>$(id).addEventListener("change",()=>{if(records.length){const c=compute();renderDailyPulse(c.all,$("dailyDate").value);renderExceptions(c)}}));
 $("jssearch").addEventListener("input",()=>{if(records.length)renderExceptions(compute())});
 })();
